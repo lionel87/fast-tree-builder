@@ -197,4 +197,4 @@ Contributions to `fast-tree-builder` are welcome! If you have any bug reports, f
 
 ## License
 
-`fast-tree-builder` is licensed under the [MIT License](https://github.com/lionel87/fast-tree-builder/blob/main/LICENSE).
+`fast-tree-builder` is licensed under the [MIT License](https://github.com/lionel87/fast-tree-builder/blob/master/LICENSE).
