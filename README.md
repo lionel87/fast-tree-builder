@@ -10,7 +10,7 @@
 
 ## Features
 
-Efficient Tree Building: The package utilizes an optimized algorithm to construct trees efficiently, ensuring quick performance even with large datasets.
+- **Efficient Tree Building**: The package utilizes an optimized algorithm to construct trees efficiently, ensuring quick performance even with large datasets.
 
 - **Bi-Directional Tree Traversal**: Traverse the built tree in both directions, enabling easy navigation between parent and child nodes.
 
