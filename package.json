@@ -20,7 +20,7 @@
     "watch:esm": "tsc --watch",
     "build:cjs": "tsc --outDir cjs --module commonjs && echo { \"type\": \"commonjs\" }>cjs/package.json",
     "watch:cjs": "npm run build:cjs && tsc --outDir cjs --module commonjs --watch",
-    "test": "node test.js"
+    "test": "mocha tests/*.js --timeout 10000"
   },
   "repository": {
     "type": "git",
@@ -56,6 +56,9 @@
   },
   "homepage": "https://github.com/lionel87/fast-tree-builder#readme",
   "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
     "rimraf": "^5.0.1",
     "typescript": "^5.1.3"
   }

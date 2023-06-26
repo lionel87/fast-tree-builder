@@ -48,7 +48,8 @@ function buildTree<
 	nodeChildrenKey?: C;
 	mapNodeData?: { (item: T): M; };
 	validateParentKeys?: Iterable<unknown>;
-}): {
+	validateTree?: boolean;
+} = {}): {
 	roots: TreeNode<M extends undefined ? T : M, D, P, C>[];
 	nodes: Map<K, TreeNode<M extends undefined ? T : M, D, P, C>>;
 } {
@@ -60,6 +61,7 @@ function buildTree<
 		nodeChildrenKey = 'children',
 		mapNodeData,
 		validateParentKeys,
+		validateTree = false,
 	} = options;
 
 	const nodes = new Map<K, any>();
@@ -112,17 +114,13 @@ function buildTree<
 		}
 	}
 
-	if (danglingNodes.size === 0) {
-		throw new Error(`Could not find root nodes, circular references found.`);
-	}
-
 	// Children of dangling nodes will become the root nodes
 	const roots: TreeNode<M extends undefined ? T : M, D, P, C>[] = [];
 	if (validateParentKeys) {
 		const validParentKeys = new Set(validateParentKeys);
 		for (const [key, node] of danglingNodes.entries()) {
 			if (!validParentKeys.has(key)) {
-				throw new Error(`Invalid parent key "${key}" from items "${node[nodeChildrenKey].join('", "')}".`);
+				throw new Error(`Invalid parent key "${key}"`);
 			}
 			for (const root of node[nodeChildrenKey]) {
 				// Root nodes does not have a parent, unlink the dangling node
@@ -143,6 +141,31 @@ function buildTree<
 			}
 		}
 	}
+
+	if (validateTree) {
+		if (nodes.size > 0 && danglingNodes.size === 0) {
+			throw new Error('Tree validation error: Stucture is a cyclic graph.');
+		}
+
+		// Count nodes, if count === nodes.size then no cycles.
+		const gray = [...roots];
+		let count = 0;
+
+		let node: any;
+		while (node = gray.pop()) {
+			++count;
+			if (node[nodeChildrenKey]) {
+				for (const child of node[nodeChildrenKey]) {
+					gray.push(child);
+				}
+			}
+		}
+
+		if (count !== nodes.size) {
+			throw new Error('Tree validation error: Stucture is a cyclic graph.');
+		}
+	}
+
 	return { roots, nodes };
 }
 
