@@ -1,5 +1,6 @@
-/test.js
-/tsconfig.json
 /src/
+/tests/
+/coverage/
+/tsconfig.json
 *.log
 *.tgz

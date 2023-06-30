@@ -13,14 +13,16 @@
     }
   },
   "scripts": {
-    "prepack": "npm run build",
-    "clean": "rimraf esm cjs",
+    "prepack": "npm run build && npm run test",
+    "postversion": "git push && git push --tags",
+    "clean": "rimraf esm cjs coverage",
     "build": "npm run build:esm && npm run build:cjs",
     "build:esm": "tsc",
     "watch:esm": "tsc --watch",
     "build:cjs": "tsc --outDir cjs --module commonjs && echo { \"type\": \"commonjs\" }>cjs/package.json",
     "watch:cjs": "npm run build:cjs && tsc --outDir cjs --module commonjs --watch",
-    "test": "mocha tests/*.js --timeout 10000"
+    "test": "mocha tests/*.js --timeout 10000",
+    "coverage": "c8 -r text -r text-summary -r lcov npm test"
   },
   "repository": {
     "type": "git",
@@ -57,7 +59,9 @@
   "homepage": "https://github.com/lionel87/fast-tree-builder#readme",
   "devDependencies": {
     "@types/chai": "^4.3.5",
+    "c8": "^8.0.0",
     "chai": "^4.3.7",
+    "coveralls": "^3.1.1",
     "mocha": "^10.2.0",
     "rimraf": "^5.0.1",
     "typescript": "^5.1.3"

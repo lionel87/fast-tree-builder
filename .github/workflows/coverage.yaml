@@ -1,0 +1,22 @@
+name: Build, Test and Coverage
+on:
+  push:
+    # branches: [ master ]
+  pull_request:
+    # branches: [ master ]
+  workflow_dispatch:
+jobs:
+  build:
+    environment: build
+    runs-on: ubuntu-latest
+    container: node:16
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install node packages
+        run: npm install
+      - name: Build package
+        run: npm run build
+      - name: Test and coverage report to coveralls.io
+        run: npm run coverage && npx --yes coveralls < coverage/lcov.info
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
