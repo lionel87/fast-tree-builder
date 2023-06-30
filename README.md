@@ -1,6 +1,6 @@
 # fast-tree-builder
 
-[![Build Status](https://github.com/lionel87/fast-tree-builder/actions/workflows/coveralls.yaml/badge.svg)](https://github.com/lionel87/fast-tree-builder/actions/workflows/coveralls.yaml)
+[![Build Status](https://github.com/lionel87/fast-tree-builder/actions/workflows/build.yaml/badge.svg)](https://github.com/lionel87/fast-tree-builder/actions/workflows/build.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/lionel87/fast-tree-builder/badge.svg?branch=master)](https://coveralls.io/github/lionel87/fast-tree-builder?branch=master)
 ![npms.io (quality)](https://img.shields.io/npms-io/quality-score/fast-tree-builder?label=quality)
 ![Maintenance](https://img.shields.io/maintenance/yes/2023)

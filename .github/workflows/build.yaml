@@ -1,4 +1,4 @@
-name: Build, Test and Coverage
+name: Build
 on:
   push:
     # branches: [ master ]
