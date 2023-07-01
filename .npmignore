@@ -1,6 +1,7 @@
+/.github/
+/coverage/
 /src/
 /tests/
-/coverage/
 /tsconfig.json
 *.log
 *.tgz
