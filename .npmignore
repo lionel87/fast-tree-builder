@@ -1,7 +1,7 @@
 /.github/
 /coverage/
 /src/
-/tests/
+/test/
 /tsconfig.json
 *.log
 *.tgz
