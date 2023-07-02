@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import assert from 'assert';
 import buildTree from '../esm/index.js';
 
 describe('buildTree', () => {
@@ -13,16 +13,16 @@ describe('buildTree', () => {
 
 		const { roots, nodes } = buildTree(items);
 
-		expect(roots).to.have.lengthOf(2);
-		expect(nodes).to.have.keys([1, 2, 3, 4, 5]);
+		assert.strictEqual(roots.length, 2);
+		assert.deepStrictEqual([...nodes.keys()], [1, 2, 3, 4, 5]);
 
-		expect(roots[0].data.name).to.equal('Root 1');
-		expect(roots[0].children[0].data.name).to.equal('Child 1.1');
-		expect(roots[0].children[0].parent.data.name).to.equal('Root 1');
-		expect(roots[0].children[1].data.name).to.equal('Child 1.2');
-		expect(roots[0].children[1].parent.data.name).to.equal('Root 1');
-		expect(roots[1].data.name).to.equal('Root 2');
-		expect(roots[1].children[0].data.name).to.equal('Child 2.1');
+		assert.strictEqual(roots[0].data.name, 'Root 1');
+		assert.strictEqual(roots[0].children[0].data.name, 'Child 1.1');
+		assert.strictEqual(roots[0].children[0].parent.data.name, 'Root 1');
+		assert.strictEqual(roots[0].children[1].data.name, 'Child 1.2');
+		assert.strictEqual(roots[0].children[1].parent.data.name, 'Root 1');
+		assert.strictEqual(roots[1].data.name, 'Root 2');
+		assert.strictEqual(roots[1].children[0].data.name, 'Child 2.1');
 	});
 
 	it('should build a tree with customized nodes keys', () => {
@@ -40,16 +40,16 @@ describe('buildTree', () => {
 			nodeChildrenKey: 'CHILDREN',
 		});
 
-		expect(roots).to.have.lengthOf(2);
-		expect(nodes).to.have.keys([1, 2, 3, 4, 5]);
+		assert.strictEqual(roots.length, 2);
+		assert.deepStrictEqual([...nodes.keys()], [1, 2, 3, 4, 5]);
 
-		expect(roots[0].DATA.name).to.equal('Root 1');
-		expect(roots[0].CHILDREN[0].DATA.name).to.equal('Child 1.1');
-		expect(roots[0].CHILDREN[0].PARENT.DATA.name).to.equal('Root 1');
-		expect(roots[0].CHILDREN[1].DATA.name).to.equal('Child 1.2');
-		expect(roots[0].CHILDREN[1].PARENT.DATA.name).to.equal('Root 1');
-		expect(roots[1].DATA.name).to.equal('Root 2');
-		expect(roots[1].CHILDREN[0].DATA.name).to.equal('Child 2.1');
+		assert.strictEqual(roots[0].DATA.name, 'Root 1');
+		assert.strictEqual(roots[0].CHILDREN[0].DATA.name, 'Child 1.1');
+		assert.strictEqual(roots[0].CHILDREN[0].PARENT.DATA.name, 'Root 1');
+		assert.strictEqual(roots[0].CHILDREN[1].DATA.name, 'Child 1.2');
+		assert.strictEqual(roots[0].CHILDREN[1].PARENT.DATA.name, 'Root 1');
+		assert.strictEqual(roots[1].DATA.name, 'Root 2');
+		assert.strictEqual(roots[1].CHILDREN[0].DATA.name, 'Child 2.1');
 	});
 
 	it('should build a tree with parent keys disabled', () => {
@@ -61,12 +61,12 @@ describe('buildTree', () => {
 			{ id: 5, parent: 2, name: 'Child 2.1' },
 		];
 
-		const { roots, nodes } = buildTree(items, {
+		const { roots } = buildTree(items, {
 			nodeParentKey: false,
 		});
 
-		expect(roots[0].children[0].parent).to.be.undefined;
-		expect(roots[0].children[1].parent).to.be.undefined;
+		assert.strictEqual(roots[0].children[0].parent, undefined);
+		assert.strictEqual(roots[0].children[1].parent, undefined);
 	});
 
 	it('should map node data when mapper fn configured', () => {
@@ -78,14 +78,14 @@ describe('buildTree', () => {
 			{ id: 5, parent: 2, name: 'Child 2.1' },
 		];
 
-		const { roots, nodes } = buildTree(items, {
+		const { roots } = buildTree(items, {
 			mapNodeData(item) {
 				return { title: item.name };
 			}
 		});
 
-		expect(roots[0].children[0].data).to.deep.equal({ title: 'Child 1.1' });
-		expect(roots[0].children[1].data).to.deep.equal({ title: 'Child 1.2' });
+		assert.deepStrictEqual(roots[0].children[0].data, { title: 'Child 1.1' });
+		assert.deepStrictEqual(roots[0].children[1].data, { title: 'Child 1.2' });
 	});
 
 	it('should handle circular references and throw an error #1', () => {
@@ -94,8 +94,11 @@ describe('buildTree', () => {
 			{ id: 2, parent: 1, name: 'Item 2' },
 		];
 
-		expect(() => buildTree(items, { validateTree: true }))
-			.to.throw(Error, 'Tree validation error: Stucture is a cyclic graph.');
+		assert.throws(
+			() => buildTree(items, { validateTree: true }),
+			Error,
+			'Tree validation error: Stucture is a cyclic graph.'
+		);
 	});
 
 	it('should handle circular references and throw an error #2', () => {
@@ -105,8 +108,11 @@ describe('buildTree', () => {
 			{ id: 3, parent: null, name: 'Root' },
 		];
 
-		expect(() => buildTree(items, { validateTree: true }))
-			.to.throw(Error, 'Tree validation error: Stucture is a cyclic graph.');
+		assert.throws(
+			() => buildTree(items, { validateTree: true }),
+			Error,
+			'Tree validation error: Stucture is a cyclic graph.'
+		);
 	});
 
 	it('should handle duplicate identifiers and throw an error', () => {
@@ -115,8 +121,11 @@ describe('buildTree', () => {
 			{ id: 1, parent: null, name: 'Item 2' },
 		];
 
-		expect(() => buildTree(items))
-			.to.throw(Error, 'Duplicate identifier detected for "1"');
+		assert.throws(
+			() => buildTree(items),
+			Error,
+			'Duplicate identifier detected for "1"'
+		);
 	});
 
 	it('should handle invalid parent keys and throw an error', () => {
@@ -125,8 +134,10 @@ describe('buildTree', () => {
 			{ id: 2, parent: 3, name: 'Item 2' },
 		];
 
-		expect(() => buildTree(items, { validateParentKeys: [null] }))
-			.to.throw(Error, 'Invalid parent key "3"');
+		assert.throws(
+			() => buildTree(items, { validateParentKeys: [null] }),
+			Error,
+			'Invalid parent key "3"'
+		);
 	});
-
 });
