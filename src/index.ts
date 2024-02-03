@@ -3,46 +3,51 @@ type TreeNode<
 	D extends string | number | symbol | false,
 	P extends string | number | symbol | false,
 	C extends string | number | symbol
-	> = (
-		D extends false
-		? (
-			P extends false
-			? T & {
-				[k in C]?: TreeNode<T,D,P,C>[];
-			}
-			: T & {
-				[k in Exclude<P, false>]?: TreeNode<T,D,P,C>;
-			} & {
-				[k in C]?: TreeNode<T,D,P,C>[];
-			}
-		)
-		: (
-			P extends false
-			? {
-				[k in Exclude<D, false>]: T;
-			} & {
-				[k in C]?: TreeNode<T,D,P,C>[];
-			}
-			: {
-				[k in Exclude<D, false>]: T;
-			} & {
-				[k in Exclude<P, false>]?: TreeNode<T,D,P,C>;
-			} & {
-				[k in C]?: TreeNode<T,D,P,C>[];
-			}
-		)
-	);
+> = (
+	D extends false
+	? (
+		P extends false
+		? T & {
+			[k in C]?: TreeNode<T,D,P,C>[];
+		}
+		: T & {
+			[k in Exclude<P, false>]?: TreeNode<T,D,P,C>;
+		} & {
+			[k in C]?: TreeNode<T,D,P,C>[];
+		}
+	)
+	: (
+		P extends false
+		? {
+			[k in Exclude<D, false>]: T;
+		} & {
+			[k in C]?: TreeNode<T,D,P,C>[];
+		}
+		: {
+			[k in Exclude<D, false>]: T;
+		} & {
+			[k in Exclude<P, false>]?: TreeNode<T,D,P,C>;
+		} & {
+			[k in C]?: TreeNode<T,D,P,C>[];
+		}
+	)
+);
+
+type KeyReturnType<T, P extends keyof T | ((item: T) => any)> =
+	P extends ((item: T) => infer R) ? R :
+	P extends keyof T ? T[P] :
+	never;
 
 function buildTree<
 	T extends (D extends false ? object : unknown),
+	K extends keyof T | ((item: T) => any),
 	M extends (D extends false ? object : unknown) = T,
-	K extends unknown = unknown,
 	D extends string | number | symbol | false = 'data',
 	P extends string | number | symbol | false = 'parent',
 	C extends string | number | symbol = 'children'
 >(items: Iterable<T>, options: {
-	key?: string | number | symbol | { (item: T): K; };
-	parentKey?: string | number | symbol | { (item: T): K; };
+	key?: K;
+	parentKey?: keyof T | ((item: T) => KeyReturnType<T, K>);
 	nodeDataKey?: D;
 	nodeParentKey?: P;
 	nodeChildrenKey?: C;
@@ -51,7 +56,7 @@ function buildTree<
 	validateTree?: boolean;
 } = {}): {
 	roots: TreeNode<M extends undefined ? T : M, D, P, C>[];
-	nodes: Map<K, TreeNode<M extends undefined ? T : M, D, P, C>>;
+	nodes: Map<KeyReturnType<T, K>, TreeNode<M extends undefined ? T : M, D, P, C>>;
 } {
 	const {
 		key = 'id',
@@ -64,11 +69,10 @@ function buildTree<
 		validateTree = false,
 	} = options;
 
-	const nodes = new Map<K, any>();
-	const danglingNodes = new Map<K, any>();
+	const nodes = new Map<KeyReturnType<T, K>, any>();
+	const danglingNodes = new Map<KeyReturnType<T, K>, any>();
 
-	for (const item of items) {
-		// @ts-ignore
+	for (const item of items as any) {
 		const keyOfNode = typeof key === 'function' ? key(item) : item[key];
 		if (nodes.has(keyOfNode)) {
 			throw new Error(`Duplicate identifier detected for "${keyOfNode}"`);
@@ -92,7 +96,6 @@ function buildTree<
 		}
 
 		// Link this node to its parent
-		// @ts-ignore
 		const keyOfParentNode = typeof parentKey === 'function' ? parentKey(item) : item[parentKey];
 		let parent = nodes.get(keyOfParentNode) ?? danglingNodes.get(keyOfParentNode);
 		if (!parent) {
