@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/lionel87/fast-tree-builder/actions/workflows/build.yaml/badge.svg)](https://github.com/lionel87/fast-tree-builder/actions/workflows/build.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/lionel87/fast-tree-builder/badge.svg?branch=master)](https://coveralls.io/github/lionel87/fast-tree-builder?branch=master)
 ![npms.io (quality)](https://img.shields.io/npms-io/quality-score/fast-tree-builder?label=quality)
-![Maintenance](https://img.shields.io/maintenance/yes/2023)
+![Maintenance](https://img.shields.io/maintenance/yes/2024)
 
 `fast-tree-builder` is an npm package that allows you to efficiently build trees from iterable data structures. With its optimized algorithm, strong TypeScript typings, and customizable node structure, it provides a reliable solution for organizing and manipulating hierarchical data.
 
@@ -15,23 +15,23 @@
 
 ## Features
 
-- **Efficient Tree Building**: The package utilizes an optimized algorithm to construct trees efficiently in `O(n)` time, ensuring good performance even with large datasets.
+- **Efficient Tree Building**: The package utilizes an optimized algorithm to construct trees efficiently in `O(n)` time, while maintaining good performance.
 
 - **Bi-Directional Tree Traversal**: Traverse the built tree in both directions, enabling easy navigation between parent and child nodes.
 
-- **Strong TypeScript Typings**: Enjoy the benefits of type safety with comprehensive TypeScript typings. The package provides detailed type definitions to enhance your development experience.
+- **Robust TypeScript Type Definitions**: Leverage type safety through extensive TypeScript type definitions. The package includes precise type annotations to improve code reliability and developer workflow.
 
 - **Fully Customizable Node Structure**: Tailor the structure of the nodes in the built tree to meet your specific requirements. You have the freedom to define data, parent, and children key names according to your application's needs. To avoid circular references parent links can be turned off which helps generating JSON data.
 
-- **Works on Any Iterable Data Structure**: Whether you have an array, set, or any other iterable data structure, `fast-tree-builder` can process it seamlessly, making it compatible with a wide range of use cases.
+- **Works on Any Iterable Data**: Designed to handle arrays, sets, and other iterable data structures efficiently, ensuring broad applicability.
 
-- **No Sorting Required**: The package does not require your input data to be sorted, saving you preprocessing time and effort.
+- **No Sorting Required**: The algorithm does not require your input data to be sorted, saving you preprocessing time and effort.
 
-- **Flexible Key and Parent Key Types**: You can use any JavaScript value for identifying items. Relations checked with `key === parentKey` comparison.
+- **Flexible Key and Parent Key Types**: You can use any JavaScript value for identifying items. Relations checked with strict (`key === parentKey`) comparison.
+
+- **Multiple Root Nodes**: Can efficiently construct trees with multiple root nodes, accommodating scenarios that necessitate distinct, separate tree structures within the same dataset.
 
 - **Map of Nodes**: Beside the root nodes you can retrieve a `Map` object containing the nodes of the built tree, enabling easy entry on any point of the tree.
-
-- **Support for Multiple Root Nodes**: The package supports building trees with multiple root nodes.
 
 - **Support for Parent Key Validation**: Enables you to validate parent keys while building the tree. When a node missing its parent, an error will be thrown.
 
@@ -225,7 +225,7 @@ Parameters
 	- `nodeParentKey`: (Optional) The key used to store the parent node in each node. It can be a string, number, symbol, or false if the parent node should not be included. Defaults to `'parent'`.
 	- `nodeChildrenKey`: (Optional) The key used to store the children nodes in each node. It can be a string, number, symbol. Defaults to `'children'`.
 	- `mapNodeData`: (Optional) A function that maps an item to its corresponding node data. It allows transforming the item before assigning it to the node. Defaults to `undefined`.
-	- `validateParentKeys`: (Optional) An iterable containing keys that should be validated as existing parent keys. If provided, any item with a parent key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
+	- `validateParentKeys`: (Optional) An iterable containing parent key values that can be accepted as root nodes. If provided, any item with a parent key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
   - `validateTree`: (Optional) A boolean flag that determines whether to validate the resulting data structure. If the structure is a cyclic graph, an `Error` will be thrown. Requires additional `O(n)` time to compute. Defaults to `false`.
 
 Returns
@@ -243,11 +243,9 @@ Throws `Error` when:
 
 ## Comparison with other tree building libraries
 
-The package aims to be feature complete and highly customizable, which usually opposes with performance. There are other packages that may be more `performant` but lacks features that I really needed in my daily coding. In standard scenarios this package should be more than enough.
+The package aims to be feature complete and highly customizable, which usually opposes with performance. There are other packages that may be more *performant* but lacks features that I really needed in my daily coding. In standard scenarios this package should perform more than enough and nearly as good as other packages.
 
-I can imagine extreme cases with huge trees where this package can be slower, but you should write your own tree building implementation optimized for that exact case anyway.
-
-Hey, its not more than:
+For scenarios where performance is critical, consider implementing a tailored, optimized algorithm. It could be as simple as:
 ```js
 const roots = [];
 const nodes = new Map();
