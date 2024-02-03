@@ -1,6 +1,7 @@
 /.github/
 /coverage/
 /src/
+/scripts/
 /test/
 /tsconfig.json
 *.log
