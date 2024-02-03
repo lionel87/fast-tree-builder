@@ -60,6 +60,8 @@ Here are some examples showcasing the usage of `fast-tree-builder` and their exp
 
 ```typescript
 import buildTree from 'fast-tree-builder';
+// OR
+const { default: buildTree } = require('fast-tree-builder');
 
 const items = [
   { id: 1, parent: null, name: 'Root 1' },
