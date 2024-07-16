@@ -158,9 +158,22 @@ describe('buildTree', () => {
 		];
 
 		assert.throws(
-			() => buildTree(items, { validRootKeys: [null] }),
+			() => buildTree(items, { validRootParentKeys: [null] }),
 			Error,
 			'Invalid parent key "3"'
+		);
+	});
+
+	it('should handle invalid keys and throw an error', () => {
+		const items = [
+			{ id: 1, children: [2], name: 'Item 1' },
+			{ id: 2, name: 'Item 2' },
+		];
+
+		assert.throws(
+			() => buildTree(items, { validRootKeys: [2] }),
+			Error,
+			'A root node has an unexpected key "1"'
 		);
 	});
 });

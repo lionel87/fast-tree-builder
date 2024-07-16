@@ -251,6 +251,7 @@ Parameters
 	- `nodeChildrenKey`: (Optional) The key used to store the children nodes in each node. It can be a `string`, `number`, `symbol`. Defaults to `'children'`.
 	- `mapNodeData`: (Optional) A function that maps an item to its corresponding node data. It allows transforming the item before assigning it to the node. Defaults to `undefined`.
 	- `validRootKeys`: (Optional) An iterable containing key values that can be accepted as root nodes. If provided, any item with a key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
+  - `validRootParentKeys`: (Optional) Only available when `mode` is set to `parent`. An iterable containing key values that can be accepted the parent field values of root nodes. If provided, any root node with a parent key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
   - `validateTree`: (Optional) A boolean flag that determines whether to validate the resulting data structure. If the structure is a cyclic graph, an `Error` will be thrown. Requires additional `O(n)` time to compute. Defaults to `false`.
 
 Returns
@@ -263,7 +264,8 @@ An object with the following properties:
 Throws `Error` when:
 
 - A duplicate identifier is recieved,
-- or `validRootKeys` is set and an invalid parent key is recieved,
+- or `validRootKeys` is set and an invalid key is recieved,
+- or `validRootParentKeys` is set and an invalid parent key is recieved,
 - or `validateTree` is set to `true` and a cyclic graph is the result.
 
 ## Comparison with other tree building libraries

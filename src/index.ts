@@ -55,6 +55,7 @@ function buildTree<
 	nodeChildrenKey?: C;
 	mapNodeData?: { (item: T): M; };
 	validRootKeys?: Iterable<unknown>;
+	validRootParentKeys?: Iterable<unknown>;
 	validateTree?: boolean;
 } = {}): {
 	roots: TreeNode<M extends undefined ? T : M, D, P, C>[];
@@ -70,6 +71,7 @@ function buildTree<
 		nodeChildrenKey = 'children',
 		mapNodeData,
 		validRootKeys,
+		validRootParentKeys,
 		validateTree = false,
 	} = options;
 
@@ -125,11 +127,11 @@ function buildTree<
 		}
 
 		// Children of dangling nodes will become the root nodes
-		if (validRootKeys) {
-			const validParentKeys = new Set(validRootKeys);
-			for (const [key, node] of danglingNodes.entries()) {
-				if (!validParentKeys.has(key)) {
-					throw new Error(`Invalid parent key "${key}"`);
+		if (validRootParentKeys) {
+			const validParentKeys = new Set(validRootParentKeys);
+			for (const [parentKey, node] of danglingNodes.entries()) {
+				if (!validParentKeys.has(parentKey)) {
+					throw new Error(`Invalid parent key "${parentKey}" found for a root node.`);
 				}
 				for (const root of node[nodeChildrenKey]) {
 					// Root nodes does not have a parent, unlink the dangling node
@@ -152,6 +154,10 @@ function buildTree<
 		}
 
 	} else {
+		if (validRootParentKeys) {
+			throw new Error(`Option "validRootParentKeys" cannot be used when mode is set to "children".`);
+		}
+
 		const knownNodes = new Set<KeyReturnType<T, K>>();
 		const incompleteNodes = new Set<KeyReturnType<T, K>>();
 
@@ -212,19 +218,17 @@ function buildTree<
 			throw new Error(`Some nodes miss their referenced children (${incompleteNodes.size}).`);
 		}
 
-		if (validRootKeys) {
-			const validParentKeys = new Set(validRootKeys);
-			for (const [key, node] of danglingNodes.entries()) {
-				if (!validParentKeys.has(key)) {
-					throw new Error(`Invalid parent key "${key}"`);
-				}
-				roots.push(node);
-				nodes.set(key, node);
-			}
-		} else {
-			for (const [key, node] of danglingNodes.entries()) {
-				roots.push(node);
-				nodes.set(key, node);
+		for (const [key, node] of danglingNodes.entries()) {
+			roots.push(node);
+			nodes.set(key, node);
+		}
+	}
+
+	if (validRootKeys) {
+		const validKeys = new Set(validRootKeys);
+		for (const key of roots.keys()) {
+			if (!validKeys.has(key)) {
+				throw new Error(`A root node has an unexpected key "${key}"`);
 			}
 		}
 	}
