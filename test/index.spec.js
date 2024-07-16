@@ -25,6 +25,29 @@ describe('buildTree', () => {
 		assert.strictEqual(roots[1].children[0].data.name, 'Child 2.1');
 	});
 
+	it('should build a tree in "children" mode', () => {
+		const items = [
+			{ id: 1, children: [3, 4], name: 'Root 1' },
+			{ id: 2, children: [5], name: 'Root 2' },
+			{ id: 3, name: 'Child 1.1' },
+			{ id: 4, name: 'Child 1.2' },
+			{ id: 5, name: 'Child 2.1' },
+		];
+
+		const { roots, nodes } = buildTree(items, { mode: 'children' });
+
+		assert.strictEqual(roots.length, 2);
+		assert.deepStrictEqual([...nodes.keys()], [3, 4, 5, 1, 2]);
+
+		assert.strictEqual(roots[0].data.name, 'Root 1');
+		assert.strictEqual(roots[0].children[0].data.name, 'Child 1.1');
+		assert.strictEqual(roots[0].children[0].parent.data.name, 'Root 1');
+		assert.strictEqual(roots[0].children[1].data.name, 'Child 1.2');
+		assert.strictEqual(roots[0].children[1].parent.data.name, 'Root 1');
+		assert.strictEqual(roots[1].data.name, 'Root 2');
+		assert.strictEqual(roots[1].children[0].data.name, 'Child 2.1');
+	});
+
 	it('should build a tree with customized nodes keys', () => {
 		const items = [
 			{ id: 1, parent: null, name: 'Root 1' },
@@ -135,7 +158,7 @@ describe('buildTree', () => {
 		];
 
 		assert.throws(
-			() => buildTree(items, { validateParentKeys: [null] }),
+			() => buildTree(items, { validRootKeys: [null] }),
 			Error,
 			'Invalid parent key "3"'
 		);

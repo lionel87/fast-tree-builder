@@ -11,7 +11,7 @@
 
 - You have a list of items,
 - where each item is identifiable by a unique value,
-- and the items are connected via a parent relation.
+- and the items are connected via a *parent* OR a *childred* relation.
 
 ## Features
 
@@ -21,13 +21,13 @@
 
 - **Robust TypeScript Type Definitions**: Leverage type safety through extensive TypeScript type definitions. The package includes precise type annotations to improve code reliability and developer workflow.
 
-- **Fully Customizable Node Structure**: Tailor the structure of the nodes in the built tree to meet your specific requirements. You have the freedom to define data, parent, and children key names according to your application's needs. To avoid circular references parent links can be turned off which helps generating JSON data.
+- **Fully Customizable Node Structure**: Tailor the structure of the nodes in the built tree to meet your specific requirements. You have the freedom to define data, parent, and children key names according to your application's needs. To avoid circular references, parent links can be turned off which helps generating JSON data.
 
 - **Works on Any Iterable Data**: Designed to handle arrays, sets, and other iterable data structures efficiently, ensuring broad applicability.
 
 - **No Sorting Required**: The algorithm does not require your input data to be sorted, saving you preprocessing time and effort.
 
-- **Flexible Key and Parent Key Types**: You can use any JavaScript value for identifying items. Relations checked with strict (`key === parentKey`) comparison.
+- **Flexible Key and Parent Key Types**: You can use any JavaScript value for identifying items. Relations checked with strict (`childKey === parentKey`) comparison.
 
 - **Multiple Root Nodes**: Can efficiently construct trees with multiple root nodes, accommodating scenarios that necessitate distinct, separate tree structures within the same dataset.
 
@@ -72,8 +72,10 @@ const items = [
 ];
 
 const { roots, nodes } = buildTree(items, {
+  // the input items:
   key: 'id',
   parentKey: 'parent',
+  // the built node:
   nodeDataKey: 'data',
   nodeParentKey: 'parent',
   nodeChildrenKey: 'children',
@@ -115,7 +117,27 @@ console.log(nodes);
 ```
 
 
-### Example 2: Customized Node Structure
+### Example 2: Build tree by children
+
+```typescript
+import buildTree from 'fast-tree-builder';
+
+const items = [
+  { id: 1, children: [3, 4], name: 'Root 1' },
+  { id: 2, children: [5], name: 'Root 2' },
+  { id: 3, name: 'Child 1.1' },
+  { id: 4, name: 'Child 1.2' },
+  { id: 5, name: 'Child 2.1' },
+];
+
+const { roots, nodes } = buildTree(items, {
+  mode: 'children'
+});
+```
+
+> Produces the same output as **Example 1**.
+
+### Example 3: Customized Node Structure
 
 ```typescript
 import buildTree from 'fast-tree-builder';
@@ -173,7 +195,7 @@ console.log(nodes);
 ```
 
 
-### Example 3: Crazy ideas
+### Example 4: Crazy ideas
 
 ```typescript
 import buildTree from 'fast-tree-builder';
@@ -221,13 +243,14 @@ Parameters
 
 - `items`: An iterable data structure containing the items to build the tree from.
 - `options`: An object specifying the build options. It has the following properties:
+  - `mode`: (Optional) Defines the item connection method. `children` means an item defines its children in a list, and connects that way; `parent` means an item defines its parent, and connects to it that way. Defaults to `parent`.
 	- `key`: (Optional) The key used to identify items. It can be a string, number, symbol, or a function that extracts the key from an item. Defaults to `'id'`.
-	- `parentKey`: (Optional) The key used to identify the parent of each item. It can be a string, number, symbol, or a function that extracts the parent key from an item. Defaults to `'parent'`.
-	- `nodeDataKey`: (Optional) The key used to store the item's data in each node. It can be a string, number, symbol, or false if the data should be merged directly into the node. Defaults to `'data'`.
-	- `nodeParentKey`: (Optional) The key used to store the parent node in each node. It can be a string, number, symbol, or false if the parent node should not be included. Defaults to `'parent'`.
-	- `nodeChildrenKey`: (Optional) The key used to store the children nodes in each node. It can be a string, number, symbol. Defaults to `'children'`.
+	- `parentKey`: (Optional) The key used to identify the parent of each item. It can be a `string`, `number`, `symbol`, or a `function` that extracts the parent key from an item. Defaults to `'parent'`.
+	- `nodeDataKey`: (Optional) The key used to store the item's data in each node. It can be a `string`, `number`, `symbol`, or `false` if the data should be merged directly into the node. Defaults to `'data'`.
+	- `nodeParentKey`: (Optional) The key used to store the parent node in each node. It can be a `string`, `number`, `symbol`, or `false` if the parent node should not be included. Defaults to `'parent'`.
+	- `nodeChildrenKey`: (Optional) The key used to store the children nodes in each node. It can be a `string`, `number`, `symbol`. Defaults to `'children'`.
 	- `mapNodeData`: (Optional) A function that maps an item to its corresponding node data. It allows transforming the item before assigning it to the node. Defaults to `undefined`.
-	- `validateParentKeys`: (Optional) An iterable containing parent key values that can be accepted as root nodes. If provided, any item with a parent key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
+	- `validRootKeys`: (Optional) An iterable containing key values that can be accepted as root nodes. If provided, any item with a key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
   - `validateTree`: (Optional) A boolean flag that determines whether to validate the resulting data structure. If the structure is a cyclic graph, an `Error` will be thrown. Requires additional `O(n)` time to compute. Defaults to `false`.
 
 Returns
@@ -240,7 +263,7 @@ An object with the following properties:
 Throws `Error` when:
 
 - A duplicate identifier is recieved,
-- or `validateParentKeys` is set and an invalid parent key is recieved,
+- or `validRootKeys` is set and an invalid parent key is recieved,
 - or `validateTree` is set to `true` and a cyclic graph is the result.
 
 ## Comparison with other tree building libraries
