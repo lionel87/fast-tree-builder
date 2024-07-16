@@ -166,14 +166,14 @@ describe('buildTree', () => {
 
 	it('should handle invalid keys and throw an error', () => {
 		const items = [
-			{ id: 1, children: [2], name: 'Item 1' },
-			{ id: 2, name: 'Item 2' },
+			{ id: 'a', children: ['b'], name: 'Item 1' },
+			{ id: 'b', name: 'Item 2' },
 		];
 
 		assert.throws(
-			() => buildTree(items, { validRootKeys: [2] }),
+			() => buildTree(items, { validRootKeys: ['c'] }),
 			Error,
-			'A root node has an unexpected key "1"'
+			'A root node has an invalid key "a"'
 		);
 	});
 });

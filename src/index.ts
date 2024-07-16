@@ -153,6 +153,17 @@ function buildTree<
 			}
 		}
 
+		// TODO: this could be optimized
+		if (validRootKeys) {
+			const rootsSet = new Set(roots);
+			const validKeys = new Set(validRootKeys);
+			for (const [key, node] of nodes) {
+				if (rootsSet.has(node) && !validKeys.has(key)) {
+					throw new Error(`A root node has an invalid key "${key}"`);
+				}
+			}
+		}
+
 	} else {
 		if (validRootParentKeys) {
 			throw new Error(`Option "validRootParentKeys" cannot be used when mode is set to "children".`);
@@ -218,17 +229,19 @@ function buildTree<
 			throw new Error(`Some nodes miss their referenced children (${incompleteNodes.size}).`);
 		}
 
-		for (const [key, node] of danglingNodes.entries()) {
-			roots.push(node);
-			nodes.set(key, node);
-		}
-	}
-
-	if (validRootKeys) {
-		const validKeys = new Set(validRootKeys);
-		for (const key of roots.keys()) {
-			if (!validKeys.has(key)) {
-				throw new Error(`A root node has an unexpected key "${key}"`);
+		if (validRootKeys) {
+			const validKeys = new Set(validRootKeys);
+			for (const [key, node] of danglingNodes.entries()) {
+				if (!validKeys.has(key)) {
+					throw new Error(`A root node has an invalid key "${key}"`);
+				}
+				roots.push(node);
+				nodes.set(key, node);
+			}
+		} else {
+			for (const [key, node] of danglingNodes.entries()) {
+				roots.push(node);
+				nodes.set(key, node);
 			}
 		}
 	}
