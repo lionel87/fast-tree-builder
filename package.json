@@ -1,6 +1,6 @@
 {
   "name": "fast-tree-builder",
-  "version": "0.1.4",
+  "version": "1.0.0-alpha.0",
   "description": "Efficiently construct highly customizable bi-directional tree structures from iterable data.",
   "type": "module",
   "module": "./index.js",
