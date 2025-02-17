@@ -1,34 +1,34 @@
 type TreeNode<
-	T,
-	D extends string | number | symbol | false,
-	P extends string | number | symbol | false,
-	C extends string | number | symbol
+	TInputData,
+	TDataKey extends string | number | symbol | false,
+	TParentKey extends string | number | symbol | false,
+	TChildrenKey extends string | number | symbol
 > = (
-	D extends false
+	TDataKey extends false
 	? (
-		P extends false
-		? T & {
-			[k in C]?: TreeNode<T,D,P,C>[];
+		TParentKey extends false
+		? TInputData & {
+			[k in TChildrenKey]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>[];
 		}
-		: T & {
-			[k in Exclude<P, false>]?: TreeNode<T,D,P,C>;
+		: TInputData & {
+			[k in Exclude<TParentKey, false>]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>;
 		} & {
-			[k in C]?: TreeNode<T,D,P,C>[];
+			[k in TChildrenKey]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>[];
 		}
 	)
 	: (
-		P extends false
+		TParentKey extends false
 		? {
-			[k in Exclude<D, false>]: T;
+			[k in Exclude<TDataKey, false>]: TInputData;
 		} & {
-			[k in C]?: TreeNode<T,D,P,C>[];
+			[k in TChildrenKey]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>[];
 		}
 		: {
-			[k in Exclude<D, false>]: T;
+			[k in Exclude<TDataKey, false>]: TInputData;
 		} & {
-			[k in Exclude<P, false>]?: TreeNode<T,D,P,C>;
+			[k in Exclude<TParentKey, false>]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>;
 		} & {
-			[k in C]?: TreeNode<T,D,P,C>[];
+			[k in TChildrenKey]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>[];
 		}
 	)
 );
@@ -39,27 +39,27 @@ type KeyReturnType<T, P extends keyof T | ((item: T) => any)> =
 	never;
 
 function buildTree<
-	T extends (D extends false ? object : unknown),
-	K extends keyof T | ((item: T) => any),
-	M extends (D extends false ? object : unknown) = T,
-	D extends string | number | symbol | false = 'data',
-	P extends string | number | symbol | false = 'parent',
-	C extends string | number | symbol = 'children'
->(items: Iterable<T>, options: {
+	TInputData extends (TDataKey extends false ? object : unknown),
+	TKey extends keyof TInputData | ((item: TInputData) => any),
+	TMappedData extends (TDataKey extends false ? object : unknown) = TInputData,
+	TDataKey extends string | number | symbol | false = 'data',
+	TParentKey extends string | number | symbol | false = 'parent',
+	TChildrenKey extends string | number | symbol = 'children'
+>(items: Iterable<TInputData>, options: {
 	mode?: 'parent' | 'children';
-	key?: K;
-	parentKey?: keyof T | ((item: T) => KeyReturnType<T, K>);
-	childrenKey?: keyof T | ((item: T) => KeyReturnType<T, K>);
-	nodeDataKey?: D;
-	nodeParentKey?: P;
-	nodeChildrenKey?: C;
-	mapNodeData?: { (item: T): M; };
+	key?: TKey;
+	parentKey?: keyof TInputData | ((item: TInputData) => KeyReturnType<TInputData, TKey>);
+	childrenKey?: keyof TInputData | ((item: TInputData) => KeyReturnType<TInputData, TKey>);
+	nodeDataKey?: TDataKey;
+	nodeParentKey?: TParentKey;
+	nodeChildrenKey?: TChildrenKey;
+	mapNodeData?: { (item: TInputData): TMappedData; };
 	validRootKeys?: Iterable<unknown>;
 	validRootParentKeys?: Iterable<unknown>;
 	validateTree?: boolean;
 } = {}): {
-	roots: TreeNode<M extends undefined ? T : M, D, P, C>[];
-	nodes: Map<KeyReturnType<T, K>, TreeNode<M extends undefined ? T : M, D, P, C>>;
+	roots: TreeNode<TMappedData extends undefined ? TInputData : TMappedData, TDataKey, TParentKey, TChildrenKey>[];
+	nodes: Map<KeyReturnType<TInputData, TKey>, TreeNode<TMappedData extends undefined ? TInputData : TMappedData, TDataKey, TParentKey, TChildrenKey>>;
 } {
 	const {
 		mode = 'parent',
@@ -75,9 +75,9 @@ function buildTree<
 		validateTree = false,
 	} = options;
 
-	const roots: TreeNode<M extends undefined ? T : M, D, P, C>[] = [];
-	const nodes = new Map<KeyReturnType<T, K>, any>();
-	const danglingNodes = new Map<KeyReturnType<T, K>, any>();
+	const roots: TreeNode<TMappedData extends undefined ? TInputData : TMappedData, TDataKey, TParentKey, TChildrenKey>[] = [];
+	const nodes = new Map<KeyReturnType<TInputData, TKey>, any>();
+	const danglingNodes = new Map<KeyReturnType<TInputData, TKey>, any>();
 
 	if (mode === 'parent') {
 		for (const item of items as any) {
@@ -169,8 +169,8 @@ function buildTree<
 			throw new Error(`Option "validRootParentKeys" cannot be used when mode is set to "children".`);
 		}
 
-		const knownNodes = new Set<KeyReturnType<T, K>>();
-		const incompleteNodes = new Set<KeyReturnType<T, K>>();
+		const knownNodes = new Set<KeyReturnType<TInputData, TKey>>();
+		const incompleteNodes = new Set<KeyReturnType<TInputData, TKey>>();
 
 		for (const item of items as any) {
 			const keyOfNode = typeof key === 'function' ? key(item) : item[key];
