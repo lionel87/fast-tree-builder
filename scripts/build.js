@@ -19,7 +19,7 @@ try {
 	// move files to package root
 	for (const file of readdirSync('build', { recursive: true, withFileTypes: true })) {
 		if (!file.isFile()) continue;
-		const source = join(file.path, file.name);
+		const source = join(file.parentPath ?? file.path, file.name);
 		const target = relative('build', source);
 		mkdirSync(dirname(target), { recursive: true });
 		renameSync(source, target);
