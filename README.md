@@ -1,17 +1,18 @@
 # fast-tree-builder
 
+[![NPM version](https://img.shields.io/npm/v/fast-tree-builder.svg)](https://npmjs.org/package/fast-tree-builder)
+[![NPM downloads](https://img.shields.io/npm/dm/fast-tree-builder.svg)](https://npmjs.org/package/fast-tree-builder)
 [![Build Status](https://github.com/lionel87/fast-tree-builder/actions/workflows/build.yaml/badge.svg)](https://github.com/lionel87/fast-tree-builder/actions/workflows/build.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/lionel87/fast-tree-builder/badge.svg?branch=master)](https://coveralls.io/github/lionel87/fast-tree-builder?branch=master)
-![npms.io (quality)](https://img.shields.io/npms-io/quality-score/fast-tree-builder?label=quality)
-![Maintenance](https://img.shields.io/maintenance/yes/2024)
+![Maintenance](https://img.shields.io/maintenance/yes/2025)
 
 `fast-tree-builder` is an npm package that allows you to efficiently build trees from iterable data structures. With its optimized algorithm, strong TypeScript typings, and customizable node structure, it provides a reliable solution for organizing and manipulating hierarchical data.
 
 ## Prerequisites
 
 - You have a list of items,
-- where each item is identifiable by a unique value,
-- and the items are connected via a *parent* OR a *childred* relation.
+- each item is identifiable by a unique id,
+- the items are connected via a *parent id* OR *children ids*.
 
 ## Features
 
