@@ -7,10 +7,10 @@ type TreeNode<
 		TDataKey extends false
 		? (
 			TParentKey extends false
-			? TInputData & {
+			? Omit<TInputData, TChildrenKey> & {
 				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
 			}
-			: TInputData & {
+			: Omit<TInputData, Exclude<TParentKey, false> | TChildrenKey> & {
 				[k in Exclude<TParentKey, false>]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>;
 			} & {
 				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
