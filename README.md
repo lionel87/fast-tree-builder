@@ -6,7 +6,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/lionel87/fast-tree-builder/badge.svg?branch=master)](https://coveralls.io/github/lionel87/fast-tree-builder?branch=master)
 ![Maintenance](https://img.shields.io/maintenance/yes/2025)
 
-`fast-tree-builder` is an npm package that allows you to efficiently build trees from iterable data structures. With its optimized algorithm, strong TypeScript typings, and customizable node structure, it provides a reliable solution for organizing and manipulating hierarchical data.
+`fast-tree-builder` is an npm package that allows you to build trees quickly from iterable data structures. With its optimized algorithm, strong TypeScript typings, and customizable node structure it provides a convenient solution for working with hierarchical data.
 
 ## Prerequisites
 
@@ -16,21 +16,21 @@
 
 ## Features
 
-- **Efficient Tree Building**: The package utilizes an optimized algorithm to construct trees efficiently in `O(n)` time, while maintaining good performance.
+- **Efficient Tree Building**: Using an optimized algorithm to construct trees in `O(n)` time.
 
-- **Bi-Directional Tree Traversal**: Traverse the built tree in both directions, enabling easy navigation between parent and child nodes.
+- **Bi-Directional Tree Traversal**: Pointers for parent and children both created for the nodes.
 
-- **Robust TypeScript Type Definitions**: Leverage type safety through extensive TypeScript type definitions. The package includes precise type annotations to improve code reliability and developer workflow.
+- **Robust TypeScript Type Definitions**: Type safety through extensive TypeScript type definitions which helps code reliability and developer workflow.
 
-- **Fully Customizable Node Structure**: Tailor the structure of the nodes in the built tree to meet your specific requirements. You have the freedom to define data, parent, and children key names according to your application's needs. To avoid circular references, parent links can be turned off which helps generating JSON data.
+- **Fully Customizable Node Structure**: The structure of the nodes in the built tree is customizable to meet your specific requirements. You have the freedom to define `data`, `parent`, and `children` key names according to your application's needs. To avoid circular references, parent links can be turned off which helps generating JSON data.
 
-- **Works on Any Iterable Data**: Designed to handle arrays, sets, and other iterable data structures efficiently, ensuring broad applicability.
+- **Works on Iterables**: Designed to handle arrays, sets, and other iterable data structures out of the box ensuring broad applicability.
 
-- **No Sorting Required**: The algorithm does not require your input data to be sorted, saving you preprocessing time and effort.
+- **No Sorting Required**: The algorithm does not require your input data to be sorted (eg. parent must come before children), saving you preprocessing time and effort.
 
-- **Flexible Key and Parent Key Types**: You can use any JavaScript value for identifying items. Relations checked with strict (`childKey === parentKey`) comparison.
+- **Flexible Key Types**: You can use any JavaScript value for identifying items. Relations checked with strict (`childKey === parentKey`) comparison.
 
-- **Multiple Root Nodes**: Can efficiently construct trees with multiple root nodes, accommodating scenarios that necessitate distinct, separate tree structures within the same dataset.
+- **Multiple Root Nodes**: Can construct multiple distinct trees. Handy when the intent is to handle the set as one tree, but a 'virtual' root item is not present among the items to couple them together. The 'roots' becomes your virtual root in this case.
 
 - **Map of Nodes**: Beside the root nodes you can retrieve a `Map` object containing the nodes of the built tree, enabling easy entry on any point of the tree.
 
@@ -242,16 +242,16 @@ Builds a tree from the given iterable `items` using the specified `options`.
 
 Parameters
 
-- `items`: An iterable data structure containing the items to build the tree from.
+- `items`: An iterable data structure containing the items of the tree.
 - `options`: An object specifying the build options. It has the following properties:
-  - `mode`: (Optional) Defines the item connection method. `children` means an item defines its children in a list, and connects that way; `parent` means an item defines its parent, and connects to it that way. Defaults to `parent`.
-	- `key`: (Optional) The key used to identify items. It can be a string, number, symbol, or a function that extracts the key from an item. Defaults to `'id'`.
-	- `parentKey`: (Optional) The key used to identify the parent of each item. It can be a `string`, `number`, `symbol`, or a `function` that extracts the parent key from an item. Defaults to `'parent'`.
-	- `nodeDataKey`: (Optional) The key used to store the item's data in each node. It can be a `string`, `number`, `symbol`, or `false` if the data should be merged directly into the node. Defaults to `'data'`.
-	- `nodeParentKey`: (Optional) The key used to store the parent node in each node. It can be a `string`, `number`, `symbol`, or `false` if the parent node should not be included. Defaults to `'parent'`.
-	- `nodeChildrenKey`: (Optional) The key used to store the children nodes in each node. It can be a `string`, `number`, `symbol`. Defaults to `'children'`.
-	- `mapNodeData`: (Optional) A function that maps an item to its corresponding node data. It allows transforming the item before assigning it to the node. Defaults to `undefined`.
-	- `validRootKeys`: (Optional) An iterable containing key values that can be accepted as root nodes. If provided, any item with a key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
+  - `mode`: (Optional) Defines the item connection method. `children` means items defines their children in an array, child nodes connects to these; `parent` means items defines their parent, parent nodes connects to these. Defaults to `parent`.
+  - `key`: (Optional) The key used to identify items. It can be a string, number, symbol, or a function that extracts the key from an item. Defaults to `'id'`.
+  - `parentKey`: (Optional) The key used to identify the parent of each item. It can be a `string`, `number`, `symbol`, or a `function` that extracts the parent key from an item. Defaults to `'parent'`.
+  - `nodeDataKey`: (Optional) The key used to store the item's data in each node. It can be a `string`, `number`, `symbol`, or `false` if the data should be merged directly into the node. Defaults to `'data'`.
+  - `nodeParentKey`: (Optional) The key used to store the parent node in each node. It can be a `string`, `number`, `symbol`, or `false` if the parent node should not be included. Defaults to `'parent'`.
+  - `nodeChildrenKey`: (Optional) The key used to store the children nodes in each node. It can be a `string`, `number`, `symbol`. Defaults to `'children'`.
+  - `mapNodeData`: (Optional) A function that maps an item to its corresponding node data. It allows transforming the item before assigning it to the node. Defaults to `undefined`.
+  - `validRootKeys`: (Optional) An iterable containing key values that can be accepted as root nodes. If provided, any item with a key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
   - `validRootParentKeys`: (Optional) Only available when `mode` is set to `parent`. An iterable containing key values that can be accepted the parent field values of root nodes. If provided, any root node with a parent key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
   - `validateTree`: (Optional) A boolean flag that determines whether to validate the resulting data structure. If the structure is a cyclic graph, an `Error` will be thrown. Requires additional `O(n)` time to compute. Defaults to `false`.
 
@@ -271,9 +271,9 @@ Throws `Error` when:
 
 ## Comparison with other tree building libraries
 
-The package aims to be feature complete and highly customizable, which usually opposes with performance. There are other packages that may be more *performant* but lacks features that I really needed in my daily coding. In standard scenarios this package should perform more than enough and nearly as good as other packages.
+The package aims to be feature complete and highly customizable, which usually opposes with performance. There are other packages that may be more *performant* but lacks features that I really needed in my daily coding. In standard scenarios this package should perform more than enough and nearly as good as any other package.
 
-For scenarios where performance is critical, consider implementing a tailored, optimized algorithm. It could be as simple as:
+For scenarios where performance is critical and you start to benchmark tree building libraries, consider  implementing your custom algorithm instead. It could be as simple as:
 ```js
 const roots = [];
 const nodes = new Map();
