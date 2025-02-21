@@ -4,34 +4,34 @@ type TreeNode<
 	TParentKey extends string | number | symbol | false,
 	TChildrenKey extends string | number | symbol
 > = (
-	TDataKey extends false
-	? (
-		TParentKey extends false
-		? TInputData & {
-			[k in TChildrenKey]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>[];
-		}
-		: TInputData & {
-			[k in Exclude<TParentKey, false>]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>;
-		} & {
-			[k in TChildrenKey]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>[];
-		}
-	)
-	: (
-		TParentKey extends false
-		? {
-			[k in Exclude<TDataKey, false>]: TInputData;
-		} & {
-			[k in TChildrenKey]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>[];
-		}
-		: {
-			[k in Exclude<TDataKey, false>]: TInputData;
-		} & {
-			[k in Exclude<TParentKey, false>]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>;
-		} & {
-			[k in TChildrenKey]?: TreeNode<TInputData,TDataKey,TParentKey,TChildrenKey>[];
-		}
-	)
-);
+		TDataKey extends false
+		? (
+			TParentKey extends false
+			? TInputData & {
+				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
+			}
+			: TInputData & {
+				[k in Exclude<TParentKey, false>]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>;
+			} & {
+				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
+			}
+		)
+		: (
+			TParentKey extends false
+			? {
+				[k in Exclude<TDataKey, false>]: TInputData;
+			} & {
+				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
+			}
+			: {
+				[k in Exclude<TDataKey, false>]: TInputData;
+			} & {
+				[k in Exclude<TParentKey, false>]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>;
+			} & {
+				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
+			}
+		)
+	);
 
 type KeyReturnType<T, P extends keyof T | ((item: T) => any)> =
 	P extends ((item: T) => infer R) ? R :
