@@ -269,6 +269,14 @@ Throws `Error` when:
 - or `validRootParentKeys` is set and an invalid parent key is recieved,
 - or `validateTree` is set to `true` and a cyclic graph is the result.
 
+## FAQ
+
+1. How can I get the exact type of the built tree nodes easily?
+    ```typescript
+    const { roots } = buildTree(items, { ... });
+    type TreeNode = typeof roots[number];
+    ```
+
 ## Comparison with other tree building libraries
 
 The package aims to be feature complete and highly customizable, which usually opposes with performance. There are other packages that may be more *performant* but lacks features that I really needed in my daily coding. In standard scenarios this package should perform more than enough and nearly as good as any other package.
