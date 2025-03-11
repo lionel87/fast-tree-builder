@@ -256,7 +256,7 @@ function buildTree<
 		let count = 0;
 
 		let node: any;
-		while (node = gray.pop() && count <= nodes.size) {
+		while ((node = gray.pop()) && count <= nodes.size) {
 			++count;
 			if (node[nodeChildrenKey]) {
 				for (const child of node[nodeChildrenKey]) {
