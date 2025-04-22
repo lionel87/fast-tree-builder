@@ -226,7 +226,7 @@ function buildTree<
 		}
 
 		if (incompleteNodes.size > 0) {
-			throw new Error(`Some nodes miss their referenced children (${incompleteNodes.size}).`);
+			throw new Error(`Some nodes miss their referenced children (count: ${incompleteNodes.size}, references: ${JSON.stringify([...incompleteNodes])}).`);
 		}
 
 		if (validRootKeys) {
