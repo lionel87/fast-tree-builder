@@ -1,276 +1,386 @@
 type TreeNode<
-	TInputData,
-	TDataKey extends string | number | symbol | false,
+	TValue,
+	TValueKey extends string | number | symbol | false,
 	TParentKey extends string | number | symbol | false,
-	TChildrenKey extends string | number | symbol
-> = (
-		TDataKey extends false
+	TChildrenKey extends string | number | symbol,
+	TWithDepth extends boolean
+> =
+	& (TValueKey extends false
 		? (
 			TParentKey extends false
-			? Omit<TInputData, TChildrenKey> & {
-				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
+			? Omit<TValue, TChildrenKey> & {
+				[k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>[];
 			}
-			: Omit<TInputData, Exclude<TParentKey, false> | TChildrenKey> & {
-				[k in Exclude<TParentKey, false>]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>;
+			: Omit<TValue, Exclude<TParentKey, false> | TChildrenKey> & {
+				[k in Exclude<TParentKey, false>]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>;
 			} & {
-				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
+				[k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>[];
 			}
 		)
 		: (
 			TParentKey extends false
 			? {
-				[k in Exclude<TDataKey, false>]: TInputData;
+				[k in Exclude<TValueKey, false>]: TValue;
 			} & {
-				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
+				[k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>[];
 			}
 			: {
-				[k in Exclude<TDataKey, false>]: TInputData;
+				[k in Exclude<TValueKey, false>]: TValue;
 			} & {
-				[k in Exclude<TParentKey, false>]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>;
+				[k in Exclude<TParentKey, false>]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>;
 			} & {
-				[k in TChildrenKey]?: TreeNode<TInputData, TDataKey, TParentKey, TChildrenKey>[];
+				[k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>[];
 			}
 		)
-	);
+	)
+	& (TWithDepth extends true ? { depth: number; } : {})
+	;
 
-type KeyReturnType<T, P extends keyof T | ((item: T) => any)> =
+type AccessorReturnType<T, P extends (keyof T) | ((item: T) => any)> =
 	P extends ((item: T) => infer R) ? R :
-	P extends keyof T ? T[P] :
+	P extends (keyof T) ? T[P] :
 	never;
 
-function buildTree<
-	TInputData extends (TNodeDataKey extends false ? object : unknown),
-	TKey extends keyof TInputData | ((item: TInputData) => any),
-	TMappedData extends (TNodeDataKey extends false ? object : unknown) = TInputData,
-	TNodeDataKey extends string | number | symbol | false = 'data',
+type IterableKeys<T> = {
+	[K in keyof T]: T[K] extends Iterable<unknown> ? K : never
+}[keyof T];
+
+export default function buildTree<
+	TInputValue extends (TIdAccessor extends (keyof TInputValue)
+		? object
+		: (TNodeValueKey extends false
+			? object
+			: unknown
+		)
+	),
+	TIdAccessor extends (keyof TInputValue) | ((item: TInputValue) => unknown),
+	TMappedValue extends (TNodeValueKey extends false ? object : unknown) = TInputValue,
+	TNodeValueKey extends string | number | symbol | false = 'value',
 	TNodeParentKey extends string | number | symbol | false = 'parent',
-	TNodeChildrenKey extends string | number | symbol = 'children'
->(items: Iterable<TInputData>, options: {
-	mode?: 'parent' | 'children';
-	key?: TKey;
-	parentKey?: keyof TInputData | ((item: TInputData) => any);
-	childrenKey?: keyof TInputData | ((item: TInputData) => any);
-	nodeDataKey?: TNodeDataKey;
+	TNodeChildrenKey extends string | number | symbol = 'children',
+	TWithDepth extends boolean = false,
+	TTreeNode = TreeNode<TMappedValue extends undefined ? TInputValue : TMappedValue, TNodeValueKey, TNodeParentKey, TNodeChildrenKey, TWithDepth>
+>(items: Iterable<TInputValue>, options: {
+	/**
+	 * A string key or function used to get the item's unique identifier.
+	 */
+	id: TIdAccessor;
+
+	/**
+	 * A string key or function used to get the item's parent identifier.
+	 *
+	 * Either `parentId` or `childIds` must be provided.
+	 */
+	parentId?: (keyof TInputValue) | ((item: TInputValue) => unknown);
+
+	/**
+	 * A string key or function to retrieve a list of child identifiers from an item.
+	 *
+	 * Either `parentId` or `childIds` must be provided.
+	 */
+	childIds?: IterableKeys<TInputValue> | ((item: TInputValue) => Iterable<unknown> | null | undefined);
+
+	/**
+	 * Maps the input item to a different value stored in the resulting tree node.
+	 */
+	nodeValueMapper?: { (item: TInputValue): TMappedValue };
+
+	/**
+	 * Object key used to store the mapped value in the output tree node.
+	 *
+	 * Defaults to `'value'`.
+	 */
+	nodeValueKey?: TNodeValueKey;
+
+	/**
+	 * Object key used to store the reference to the parent node in the output tree node.
+	 *
+	 * Defaults to `'parent'`.
+	 */
 	nodeParentKey?: TNodeParentKey;
+
+	/**
+	 * Object key used to store the list of child nodes in the output tree node.
+	 *
+	 * Defaults to `'children'`.
+	 */
 	nodeChildrenKey?: TNodeChildrenKey;
-	mapNodeData?: { (item: TInputData): TMappedData; };
-	validRootKeys?: Iterable<unknown>;
-	validRootParentKeys?: Iterable<unknown>;
+
+	/**
+	 * When enabled, adds a `depth` property to each output node indicating its depth within the tree.
+	 * Root nodes have a depth of 0.
+	 *
+	 * This also implicitly enables `validateTree`, as depth assignment requires a valid tree structure,
+	 * and both operations share the same traversal logic.
+	 *
+	 * Defaults to `false`.
+	 */
+	withDepth?: TWithDepth;
+
+	/**
+	 * Validates that the final structure forms a tree.
+	 *
+	 * Ensures:
+	 * - No cycles
+	 * - No node reachable through multiple paths
+	 *
+	 * Throws if the structure is not a proper tree.
+	 *
+	 * Defaults to `false`
+	 */
 	validateTree?: boolean;
-} = {}): {
-	roots: TreeNode<TMappedData extends undefined ? TInputData : TMappedData, TNodeDataKey, TNodeParentKey, TNodeChildrenKey>[];
-	nodes: Map<KeyReturnType<TInputData, TKey>, TreeNode<TMappedData extends undefined ? TInputData : TMappedData, TNodeDataKey, TNodeParentKey, TNodeChildrenKey>>;
+
+	/**
+	 * Validates referential integrity of the input.
+	 *
+	 * In strict mode:
+	 * - All parent and child references must point to existing items in the input.
+	 * - Root items must have their `parentId` unset, `null`, or `undefined`.
+	 *
+	 * Any invalid or missing references will result in an error during tree construction.
+	 *
+	 * Defaults to `false`
+	 */
+	validateReferences?: boolean;
+} & ({
+	parentId?: never;
+	childIds: IterableKeys<TInputValue> | ((item: TInputValue) => unknown[] | null | undefined);
+} | {
+	parentId: (keyof TInputValue) | ((item: TInputValue) => unknown);
+	childIds?: never;
+})): {
+	roots: TTreeNode[];
+	nodes: Map<AccessorReturnType<TInputValue, TIdAccessor>, TTreeNode>;
 } {
+	if (!options) {
+		// TS types prevents this but its better to check
+		throw new Error('Missing required "options" parameter.');
+	}
 	const {
-		mode = 'parent',
-		key = 'id',
-		parentKey = 'parent',
-		childrenKey = 'children',
-		nodeDataKey = 'data',
+		id: idAccessor,
+		parentId: parentIdAccessor,
+		childIds: childIdsAccessor,
+		nodeValueMapper,
+		nodeValueKey = 'value',
 		nodeParentKey = 'parent',
 		nodeChildrenKey = 'children',
-		mapNodeData,
-		validRootKeys,
-		validRootParentKeys,
+		withDepth = false,
 		validateTree = false,
+		validateReferences = false,
 	} = options;
 
-	const roots: TreeNode<TMappedData extends undefined ? TInputData : TMappedData, TNodeDataKey, TNodeParentKey, TNodeChildrenKey>[] = [];
-	const nodes = new Map<KeyReturnType<TInputData, TKey>, any>();
-	const danglingNodes = new Map<KeyReturnType<TInputData, TKey>, any>();
+	if (!idAccessor) {
+		throw new Error('Option "id" is required.');
+	}
+	if (!parentIdAccessor && !childIdsAccessor) {
+		throw new Error('Either "parentId" or "childIds" must be provided.');
+	}
+	if (parentIdAccessor && childIdsAccessor) {
+		throw new Error('"parentId" and "childIds" cannot be used together.');
+	}
 
-	if (mode === 'parent') {
+	const roots = [];
+	const nodes = new Map();
+
+	if (parentIdAccessor) {
+		// CONNECT BY PARENT ID
+
+		/** `parentId => [childNode, ...]` */
+		const waitingForParent = new Map();
+
 		for (const item of items as any) {
-			const keyOfNode = typeof key === 'function' ? key(item) : item[key];
-			const keyOfParentNode = typeof parentKey === 'function' ? parentKey(item) : item[parentKey];
+			const id = typeof idAccessor === 'function' ? idAccessor(item) : item[idAccessor];
 
-			if (nodes.has(keyOfNode)) {
-				throw new Error(`Duplicate identifier detected for "${keyOfNode}"`);
+			if (nodes.has(id)) {
+				throw new Error(`Duplicate identifier "${id}".`);
 			}
 
-			// Current node can be new or already created by a child item as its parent
-			let node = danglingNodes.get(keyOfNode);
-			if (node) {
-				danglingNodes.delete(keyOfNode);
-			} else {
-				node = {};
-			}
-			nodes.set(keyOfNode, node);
+			const node = nodeValueKey !== false
+				? { [nodeValueKey as any]: nodeValueMapper ? nodeValueMapper(item) : item }
+				: { ...(nodeValueMapper ? nodeValueMapper(item) : item) };
 
-			// Set the data of the node
-			const nodeData = typeof mapNodeData === 'function' ? mapNodeData(item) : item;
-			if (nodeDataKey !== false) {
-				node[nodeDataKey] = nodeData;
+			nodes.set(id, node);
+
+			// Link this node to its parent
+			const parentId = typeof parentIdAccessor === 'function' ? parentIdAccessor(item) : item[parentIdAccessor];
+			const parentNode = nodes.get(parentId);
+			if (parentNode) {
+				parentNode[nodeChildrenKey] ||= [];
+				parentNode[nodeChildrenKey].push(node);
+				if (nodeParentKey !== false) {
+					node[nodeParentKey] = parentNode;
+				}
 			} else {
-				Object.assign(node, nodeData);
+				const siblings = waitingForParent.get(parentId);
+				if (siblings) {
+					siblings.push(node);
+				} else {
+					waitingForParent.set(parentId, [node]);
+				}
+			}
+
+			// Link this node to its children
+			const children = waitingForParent.get(id);
+			if (children) {
+				node[nodeChildrenKey] = children;
+
+				if (nodeParentKey !== false) {
+					for (const child of children) {
+						child[nodeParentKey] = node;
+					}
+				}
+
+				waitingForParent.delete(id);
+			}
+		}
+
+		// Finalize roots
+		for (const [parentId, nodes] of waitingForParent.entries()) {
+			if (validateReferences && parentId != null) {
+				throw new Error(`Referential integrity violation: parentId "${parentId}" does not match any item in the input.`);
+			}
+			for (const node of nodes) {
+				roots.push(node);
+			}
+		}
+
+	} else if (childIdsAccessor) {
+		// CONNECT BY CHILD IDS
+
+		/** `childId => [{ parentNode, index }, ...]` */
+		const waitingChildren = new Map();
+
+		const rootCandidates = new Map();
+
+		for (const item of items as any) {
+			const id = typeof idAccessor === 'function' ? idAccessor(item) : item[idAccessor];
+
+			if (nodes.has(id)) {
+				throw new Error(`Duplicate identifier "${id}".`);
+			}
+
+			const node = nodeValueKey !== false
+				? { [nodeValueKey as any]: nodeValueMapper ? nodeValueMapper(item) : item }
+				: { ...(nodeValueMapper ? nodeValueMapper(item) : item) };
+
+			nodes.set(id, node);
+
+			// Link this node to its children
+			const childIds = typeof childIdsAccessor === 'function' ? childIdsAccessor(item) : item[childIdsAccessor];
+			if (childIds != null) {
+				if (typeof childIds[Symbol.iterator] !== 'function') {
+					// TS types prevents this but its better to check
+					throw new Error(`Item "${id}" has invalid children: expected an iterable value.`);
+				}
+
+				node[nodeChildrenKey] = [];
+
+				for (const childId of childIds) {
+					const childNode = nodes.get(childId);
+					if (childNode) {
+						node[nodeChildrenKey].push(childNode);
+
+						if (nodeParentKey !== false) {
+							if (childNode[nodeParentKey] && childNode[nodeParentKey] !== node) {
+								throw new Error(`Node "${childId}" already has a different parent, refusing to overwrite. Set "nodeParentKey" to false to supress this error.`);
+							}
+							childNode[nodeParentKey] = node;
+						}
+
+						rootCandidates.delete(childId);
+					} else {
+						waitingChildren.set(childId, {
+							parentNode: node,
+							childIndex: node[nodeChildrenKey].length,
+						});
+
+						node[nodeChildrenKey].push(null); // placeholder until the item arrives
+					}
+				}
+
+				if (node[nodeChildrenKey].length === 0) {
+					delete node[nodeChildrenKey];
+				}
 			}
 
 			// Link this node to its parent
-			let parentNode = nodes.get(keyOfParentNode) ?? danglingNodes.get(keyOfParentNode);
-			if (!parentNode) {
-				// No parent node exists yet, create as dangling node
-				parentNode = {};
-				// Track as dangling node, we dont know yet if it really exists
-				danglingNodes.set(keyOfParentNode, parentNode);
-			}
-			// When no children added yet
-			if (!parentNode[nodeChildrenKey]) {
-				parentNode[nodeChildrenKey] = [];
-			}
-			// Add as child
-			parentNode[nodeChildrenKey].push(node);
+			const parentDescriptor = waitingChildren.get(id);
+			if (parentDescriptor) {
+				const { parentNode, childIndex } = parentDescriptor;
 
-			// Set the parent on this node
-			if (nodeParentKey !== false) {
-				node[nodeParentKey] = parentNode;
-			}
-		}
+				parentNode[nodeChildrenKey][childIndex] = node;
 
-		// Children of dangling nodes will become the root nodes
-		if (validRootParentKeys) {
-			const validParentKeys = new Set(validRootParentKeys);
-			for (const [parentKey, node] of danglingNodes.entries()) {
-				if (!validParentKeys.has(parentKey)) {
-					throw new Error(`Invalid parent key "${parentKey}" found for a root node.`);
-				}
-				for (const root of node[nodeChildrenKey]) {
-					// Root nodes does not have a parent, unlink the dangling node
-					if (nodeParentKey !== false) {
-						delete root[nodeParentKey];
+				if (nodeParentKey !== false) {
+					if (node[nodeParentKey] && node[nodeParentKey] !== parentNode) {
+						throw new Error(`Node "${id}" already has a different parent, refusing to overwrite. Set "nodeParentKey" to false to supress this error.`);
 					}
-					roots.push(root);
+					node[nodeParentKey] = parentNode;
 				}
-			}
-		} else {
-			for (const node of danglingNodes.values()) {
-				for (const root of node[nodeChildrenKey]) {
-					// Root nodes does not have a parent, unlink the dangling node
-					if (nodeParentKey !== false) {
-						delete root[nodeParentKey];
-					}
-					roots.push(root);
-				}
-			}
-		}
 
-		// TODO: this could be optimized
-		if (validRootKeys) {
-			const rootsSet = new Set(roots);
-			const validKeys = new Set(validRootKeys);
-			for (const [key, node] of nodes) {
-				if (rootsSet.has(node) && !validKeys.has(key)) {
-					throw new Error(`A root node has an invalid key "${key}"`);
-				}
-			}
-		}
-
-	} else {
-		if (validRootParentKeys) {
-			throw new Error(`Option "validRootParentKeys" cannot be used when mode is set to "children".`);
-		}
-
-		const knownNodes = new Set<KeyReturnType<TInputData, TKey>>();
-		const incompleteNodes = new Set<KeyReturnType<TInputData, TKey>>();
-
-		for (const item of items as any) {
-			const keyOfNode = typeof key === 'function' ? key(item) : item[key];
-			const keyOfChildNodes = typeof childrenKey === 'function' ? childrenKey(item) : item[childrenKey];
-
-			if (knownNodes.has(keyOfNode)) {
-				throw new Error(`Duplicate identifier detected for "${keyOfNode}"`);
-			}
-			knownNodes.add(keyOfNode);
-			incompleteNodes.delete(keyOfNode);
-
-			let node = nodes.get(keyOfNode);
-			if (!node) {
-				node = {};
-				danglingNodes.set(keyOfNode, node);
-			}
-
-			// Set the data of the node
-			const nodeData = typeof mapNodeData === 'function' ? mapNodeData(item) : item;
-			if (nodeDataKey !== false) {
-				node[nodeDataKey] = nodeData;
+				waitingChildren.delete(id);
 			} else {
-				Object.assign(node, nodeData);
+				rootCandidates.set(id, node);
+			}
+		}
+
+		if (waitingChildren.size > 0) {
+			if (validateReferences) {
+				const childId = waitingChildren.keys().next().value;
+				throw new Error(`Referential integrity violation: child reference "${childId}" does not match any item in the input.`);
 			}
 
-			// Link children to this node
-			if (keyOfChildNodes) {
-				node[nodeChildrenKey] = [];
-				for (const keyOfChildNode of keyOfChildNodes) {
-					let childNode = danglingNodes.get(keyOfChildNode);
-					if (childNode) {
-						nodes.set(keyOfChildNode, childNode);
-						danglingNodes.delete(keyOfChildNode);
-						// Set the parent on child node
-						if (nodeParentKey !== false) {
-							childNode[nodeParentKey] = node;
-						}
-					} else if (nodes.has(keyOfChildNode)) {
-						throw new Error(`Duplicate parent detected for "${keyOfChildNode}"`);
-					} else {
-						// We create a new temporary node
-						childNode = {};
-						// Set the parent on child node
-						if (nodeParentKey !== false) {
-							childNode[nodeParentKey] = node;
-						}
-						nodes.set(keyOfChildNode, childNode);
-						incompleteNodes.add(keyOfChildNode);
-					}
-					node[nodeChildrenKey].push(childNode);
+			// Remove unresolved children
+			const pending = Array.from(waitingChildren.values());
+			for (let i = pending.length - 1; i >= 0; i--) {
+				const { parentNode, childIndex } = pending[i];
+
+				parentNode[nodeChildrenKey].splice(childIndex, 1);
+
+				if (parentNode[nodeChildrenKey].length === 0) {
+					delete parentNode[nodeChildrenKey];
 				}
 			}
 		}
 
-		if (incompleteNodes.size > 0) {
-			throw new Error(`Some nodes miss their referenced children (${incompleteNodes.size}).`);
-		}
-
-		if (validRootKeys) {
-			const validKeys = new Set(validRootKeys);
-			for (const [key, node] of danglingNodes.entries()) {
-				if (!validKeys.has(key)) {
-					throw new Error(`A root node has an invalid key "${key}"`);
-				}
-				roots.push(node);
-				nodes.set(key, node);
-			}
-		} else {
-			for (const [key, node] of danglingNodes.entries()) {
-				roots.push(node);
-				nodes.set(key, node);
-			}
+		// Finalize roots
+		for (const node of rootCandidates.values()) {
+			roots.push(node);
 		}
 	}
 
-	if (validateTree) {
-		if (nodes.size > 0 && danglingNodes.size === 0) {
-			throw new Error('Tree validation error: Stucture is a cyclic graph.');
+	if (validateTree || withDepth) {
+		if (roots.length === 0 && nodes.size > 0) {
+			throw new Error('Tree validation failed: detected a cycle.');
 		}
 
-		// Count nodes, if count === nodes.size then no cycles.
-		const gray = [...roots];
-		let count = 0;
+		const stack = [...roots].map(node => ({ node, depth: 0 }));
+		const visited = new Set();
 
-		let node: any;
-		while ((node = gray.pop()) && count <= nodes.size) {
-			++count;
+		let processedCount = 0;
+		const MAX_NODES = nodes.size;
+
+		while (stack.length > 0 && processedCount++ <= MAX_NODES) {
+			const { node, depth } = stack.pop()!;
+
+			if (visited.has(node)) {
+				throw new Error('Tree validation failed: a node reachable via multiple paths.');
+			}
+			visited.add(node);
+
+			if (withDepth) {
+				node.depth = depth;
+			}
+
 			if (node[nodeChildrenKey]) {
 				for (const child of node[nodeChildrenKey]) {
-					gray.push(child);
+					stack.push({ node: child, depth: depth + 1 });
 				}
 			}
 		}
 
-		if (count !== nodes.size) {
-			throw new Error('Tree validation error: Stucture is a cyclic graph.');
+		if (nodes.size !== visited.size) {
+			throw new Error('Tree validation failed: detected a cycle.');
 		}
 	}
-
 	return { roots, nodes };
 }
-
-export default buildTree;

@@ -6,7 +6,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/lionel87/fast-tree-builder/badge.svg?branch=master)](https://coveralls.io/github/lionel87/fast-tree-builder?branch=master)
 ![Maintenance](https://img.shields.io/maintenance/yes/2025)
 
-`fast-tree-builder` is an npm package that allows you to build trees quickly from iterable data structures. With its optimized algorithm, strong TypeScript typings, and customizable node structure it provides a convenient solution for working with hierarchical data.
+`fast-tree-builder` is a high-performance TypeScript-first utility for constructing trees from iterable collections. It supports flexible input formats and fully customizable output node structures, enabling safe and idiomatic manipulation of hierarchical data.
+
 
 ## Prerequisites
 
@@ -14,33 +15,23 @@
 - each item is identifiable by a unique id,
 - the items are connected via a *parent id* OR *children ids*.
 
+
 ## Features
 
-- **Efficient Tree Building**: Using an optimized algorithm to construct trees in `O(n)` time.
+- **Fully Typed and Customizable** – TypeScript support with correct types for the built tree.
+- **Supports Both `parentId` and `childIds` Models** – Choose your relation style via options.
+- **Iterable Input Support** – Works on arrays, sets, or any iterable.
+- **Flexible Key Types** – Anything can be an identifier. Relations checked with (`childKey === parentKey`) comparison.
+- **Fully Customizable Node Structure**: Design the node structure as you like.
+- **O(n) Tree Construction** – Efficient building from unordered data, no sorting needed.
+- **Bi-Directional Tree Links** – Nodes can store both `children` and `parent` references.
+- **Multi-Root Support** – Handles disjoint trees naturally if no virtual root is present.
+- **Map of Nodes** – Returned `Map` allows constant-time access to any node.
+- **Tree Validation** – Detects cycles or nodes reachable through multiple paths.
+- **Reference Validation** – Optionally enforce that all parent/child links are valid.
 
-- **Bi-Directional Tree Traversal**: Pointers for parent and children both created for the nodes.
-
-- **Robust TypeScript Type Definitions**: Type safety through extensive TypeScript type definitions which helps code reliability and developer workflow.
-
-- **Fully Customizable Node Structure**: The structure of the nodes in the built tree is customizable to meet your specific requirements. You have the freedom to define `data`, `parent`, and `children` key names according to your application's needs. To avoid circular references, parent links can be turned off which helps generating JSON data.
-
-- **Works on Iterables**: Designed to handle arrays, sets, and other iterable data structures out of the box ensuring broad applicability.
-
-- **No Sorting Required**: The algorithm does not require your input data to be sorted (eg. parent must come before children), saving you preprocessing time and effort.
-
-- **Flexible Key Types**: You can use any JavaScript value for identifying items. Relations checked with strict (`childKey === parentKey`) comparison.
-
-- **Multiple Root Nodes**: Can construct multiple distinct trees. Handy when the intent is to handle the set as one tree, but a 'virtual' root item is not present among the items to couple them together. The 'roots' becomes your virtual root in this case.
-
-- **Map of Nodes**: Beside the root nodes you can retrieve a `Map` object containing the nodes of the built tree, enabling easy entry on any point of the tree.
-
-- **Support for Parent Key Validation**: Enables you to validate parent keys while building the tree. When a node missing its parent, an error will be thrown.
-
-- **Support for Tree Validation**: Ensures the recieved data structure is an acyclic graph.
 
 ## Installation
-
-To install `fast-tree-builder`, use npm:
 
 ```sh
 npm install fast-tree-builder
@@ -51,6 +42,53 @@ or
 ```sh
 yarn add fast-tree-builder
 ```
+
+
+## Documentation
+
+### `buildTree(items: Iterable<T>, options: Options): TreeResult`
+
+Builds a tree structure from an iterable list of items.
+
+#### Parameters
+
+* `items`: Any iterable of input items.
+* `options`: Configuration object:
+
+##### Required
+
+- `id`: A key or function used to extract the unique identifier from each item.
+
+##### One of:
+
+- `parentId`: A key or function returning the parent ID of the item.
+- `childIds`: A key or function returning an iterable of child IDs for the item.
+
+##### Optional
+
+- `nodeValueMapper`: Function to map an item to a custom value stored in the node. Optional.
+- `nodeValueKey`: Key where the item's data is stored in the output node. Set to `false` to inline the item directly into the node. Default: `'value'`.
+- `nodeParentKey`: Key where the node's parent reference is stored. Set to `false` to omit parent links. Default: `'parent'`.
+- `nodeChildrenKey`: Key where the node's children are stored. Default: `'children'`.
+- `withDepth`: When `true`, adds a `depth` property to each node indicating its depth in the tree. Also implies `validateTree`. Default: `false`.
+- `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Errors are thrown on invalid references. Default: `false`.
+- `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or multi-path references). Errors are thrown if the check fails. Default: `false`.
+
+#### Returns
+
+```ts
+{
+  roots: TreeNode[],                // top-level nodes
+  nodes: Map<id, TreeNode>          // all nodes by id
+}
+```
+
+#### Throws
+
+- Missing required `id`, `parentId`/`childIds`, or `options` parameter
+- Duplicate item identifiers
+- Invalid reference (if `validateReferences` is enabled)
+- Cycle or structural error (if `validateTree` or `withDepth` is enabled)
 
 
 ## Usage
@@ -74,46 +112,46 @@ const items = [
 
 const { roots, nodes } = buildTree(items, {
   // the input items:
-  key: 'id',
-  parentKey: 'parent',
+  id: 'id',
+  parentId: 'parent',
   // the built node:
-  nodeDataKey: 'data',
+  nodeValueKey: 'value',
   nodeParentKey: 'parent',
   nodeChildrenKey: 'children',
 });
 
-console.log(roots[0].data.name);
+console.log(roots[0].value.name);
 // Expected output: Root 1
 
-console.log(roots[0].children[1].data.name);
+console.log(roots[0].children[1].value.name);
 // Expected output: Child 1.2
 
-console.log(roots[0].children[1].parent.data.name);
+console.log(roots[0].children[1].parent.value.name);
 // Expected output: Root 1
 
 console.log(roots);
 // Expected output: [
-//   { data: { id: 1, parent: null, name: 'Root 1' }, children: [
-//     { data: { id: 3, parent: 1, name: 'Child 1.1' }, parent: { ... } },
-//     { data: { id: 4, parent: 1, name: 'Child 1.2' }, parent: { ... } }
+//   { value: { id: 1, parent: null, name: 'Root 1' }, children: [
+//     { value: { id: 3, parent: 1, name: 'Child 1.1' }, parent: { ... } },
+//     { value: { id: 4, parent: 1, name: 'Child 1.2' }, parent: { ... } }
 //   ] },
-//   { data: { id: 2, parent: null, name: 'Root 2' }, children: [
-//     { data: { id: 5, parent: 2, name: 'Child 2.1' }, parent: { ... } }
+//   { value: { id: 2, parent: null, name: 'Root 2' }, children: [
+//     { value: { id: 5, parent: 2, name: 'Child 2.1' }, parent: { ... } }
 //   ] }
 // ]
 
 console.log(nodes);
 // Expected output: Map {
-//   1 => { data: { id: 1, parent: null, name: 'Root 1' }, children: [
-//     { data: { id: 3, parent: 1, name: 'Child 1.1' }, parent: { ... } },
-//     { data: { id: 4, parent: 1, name: 'Child 1.2' }, parent: { ... } }
+//   1 => { value: { id: 1, parent: null, name: 'Root 1' }, children: [
+//     { value: { id: 3, parent: 1, name: 'Child 1.1' }, parent: { ... } },
+//     { value: { id: 4, parent: 1, name: 'Child 1.2' }, parent: { ... } }
 //   ] },
-//   2 => { data: { id: 2, parent: null, name: 'Root 2' }, children: [
-//     { data: { id: 5, parent: 2, name: 'Child 2.1' }, parent: { ... } }
+//   2 => { value: { id: 2, parent: null, name: 'Root 2' }, children: [
+//     { value: { id: 5, parent: 2, name: 'Child 2.1' }, parent: { ... } }
 //   ] },
-//   3 => { data: { id: 3, parent: 1, name: 'Child 1.1' }, parent: { ... } },
-//   4 => { data: { id: 4, parent: 1, name: 'Child 1.2' }, parent: { ... } },
-//   5 => { data: { id: 5, parent: 2, name: 'Child 2.1' }, parent: { ... } }
+//   3 => { value: { id: 3, parent: 1, name: 'Child 1.1' }, parent: { ... } },
+//   4 => { value: { id: 4, parent: 1, name: 'Child 1.2' }, parent: { ... } },
+//   5 => { value: { id: 5, parent: 2, name: 'Child 2.1' }, parent: { ... } }
 // }
 ```
 
@@ -132,7 +170,8 @@ const items = [
 ];
 
 const { roots, nodes } = buildTree(items, {
-  mode: 'children'
+  id: 'id',
+  childIds: 'children',
 });
 ```
 
@@ -152,12 +191,12 @@ const items = [
 ];
 
 const { roots, nodes } = buildTree(items, {
-  key(item) { return item.key?.n; },
-  parentKey(item) { return item.parentKey?.n; },
-  nodeDataKey: false, // merge item data into node
+  id: item => item.key?.n,
+  parentId: item => item.parentKey?.n,
+  nodeValueMapper: item => ({ title: item.name }),
+  nodeValueKey: false, // merge item data into node
   nodeParentKey: 'up',
   nodeChildrenKey: 'down',
-  mapNodeData(item) { return { title: item.name }; },
 });
 
 console.log(roots[0].title);
@@ -210,10 +249,10 @@ const items = [
 ];
 
 const { roots, nodes } = buildTree(items, {
-  key(item) { return item.substring(2, 4); },
-  parentKey(item) { return item.substring(0, 2); },
-  mapNodeData(item) { return { name: item.substring(4) }; },
-  nodeDataKey: false, // merge item data into node
+  id: item => item.substring(2, 4),
+  parentKey: item => item.substring(0, 2),
+  nodeValueMapper: item => ({ name: item.substring(4) }),
+  nodeValueKey: false, // merge item data into node
 });
 
 console.log(roots[0].name);
@@ -234,40 +273,6 @@ console.log(roots);
 // ]
 ```
 
-## Documentation
-
-### `buildTree(items: Iterable<T>, options: BuildTreeOptions): TreeResult<T>`
-
-Builds a tree from the given iterable `items` using the specified `options`.
-
-Parameters
-
-- `items`: An iterable data structure containing the items of the tree.
-- `options`: An object specifying the build options. It has the following properties:
-  - `mode`: (Optional) Defines the item connection method. `children` means items defines their children in an array, child nodes connects to these; `parent` means items defines their parent, parent nodes connects to these. Defaults to `parent`.
-  - `key`: (Optional) The key used to identify items. It can be a string, number, symbol, or a function that extracts the key from an item. Defaults to `'id'`.
-  - `parentKey`: (Optional) The key used to identify the parent of each item. It can be a `string`, `number`, `symbol`, or a `function` that extracts the parent key from an item. Defaults to `'parent'`.
-  - `nodeDataKey`: (Optional) The key used to store the item's data in each node. It can be a `string`, `number`, `symbol`, or `false` if the data should be merged directly into the node. Defaults to `'data'`.
-  - `nodeParentKey`: (Optional) The key used to store the parent node in each node. It can be a `string`, `number`, `symbol`, or `false` if the parent node should not be included. Defaults to `'parent'`.
-  - `nodeChildrenKey`: (Optional) The key used to store the children nodes in each node. It can be a `string`, `number`, `symbol`. Defaults to `'children'`.
-  - `mapNodeData`: (Optional) A function that maps an item to its corresponding node data. It allows transforming the item before assigning it to the node. Defaults to `undefined`.
-  - `validRootKeys`: (Optional) An iterable containing key values that can be accepted as root nodes. If provided, any item with a key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
-  - `validRootParentKeys`: (Optional) Only available when `mode` is set to `parent`. An iterable containing key values that can be accepted the parent field values of root nodes. If provided, any root node with a parent key not present in this iterable will cause an error to be thrown. Defaults to `undefined`.
-  - `validateTree`: (Optional) A boolean flag that determines whether to validate the resulting data structure. If the structure is a cyclic graph, an `Error` will be thrown. Requires additional `O(n)` time to compute. Defaults to `false`.
-
-Returns
-
-An object with the following properties:
-
-- `roots`: An array of the root nodes of the built tree.
-- `nodes`: A `Map` object containing all nodes of the built tree, with keys corresponding to their identifiers.
-
-Throws `Error` when:
-
-- A duplicate identifier is recieved,
-- or `validRootKeys` is set and an invalid key is recieved,
-- or `validRootParentKeys` is set and an invalid parent key is recieved,
-- or `validateTree` is set to `true` and a cyclic graph is the result.
 
 ## FAQ
 
@@ -291,7 +296,7 @@ for (const item of items) {
     node = {};
     nodes.set(item.id, node);
   }
-  node.data = item; // Or Object.assign(node, item);
+  node.value = item; // Or Object.assign(node, item);
   if (item.parentId) {
     let parent = nodes.get(item.parentId);
     if (!parent) {

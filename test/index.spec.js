@@ -11,18 +11,21 @@ describe('buildTree', () => {
 			{ id: 5, parent: 2, name: 'Child 2.1' },
 		];
 
-		const { roots, nodes } = buildTree(items);
+		const { roots, nodes } = buildTree(items, {
+			id: 'id',
+			parentId: 'parent',
+		});
 
 		assert.strictEqual(roots.length, 2);
 		assert.deepStrictEqual([...nodes.keys()], [1, 2, 3, 4, 5]);
 
-		assert.strictEqual(roots[0].data.name, 'Root 1');
-		assert.strictEqual(roots[0].children[0].data.name, 'Child 1.1');
-		assert.strictEqual(roots[0].children[0].parent.data.name, 'Root 1');
-		assert.strictEqual(roots[0].children[1].data.name, 'Child 1.2');
-		assert.strictEqual(roots[0].children[1].parent.data.name, 'Root 1');
-		assert.strictEqual(roots[1].data.name, 'Root 2');
-		assert.strictEqual(roots[1].children[0].data.name, 'Child 2.1');
+		assert.strictEqual(roots[0].value.name, 'Root 1');
+		assert.strictEqual(roots[0].children[0].value.name, 'Child 1.1');
+		assert.strictEqual(roots[0].children[0].parent.value.name, 'Root 1');
+		assert.strictEqual(roots[0].children[1].value.name, 'Child 1.2');
+		assert.strictEqual(roots[0].children[1].parent.value.name, 'Root 1');
+		assert.strictEqual(roots[1].value.name, 'Root 2');
+		assert.strictEqual(roots[1].children[0].value.name, 'Child 2.1');
 	});
 
 	it('should build a tree in "children" mode', () => {
@@ -34,21 +37,24 @@ describe('buildTree', () => {
 			{ id: 5, name: 'Child 2.1' },
 		];
 
-		const { roots, nodes } = buildTree(items, { mode: 'children' });
+		const { roots, nodes } = buildTree(items, {
+			id: 'id',
+			childIds: 'children',
+		});
 
 		assert.strictEqual(roots.length, 2);
-		assert.deepStrictEqual([...nodes.keys()], [3, 4, 5, 1, 2]);
+		assert.deepStrictEqual([...nodes.keys()], [1, 2, 3, 4, 5]);
 
-		assert.strictEqual(roots[0].data.name, 'Root 1');
-		assert.strictEqual(roots[0].children[0].data.name, 'Child 1.1');
-		assert.strictEqual(roots[0].children[0].parent.data.name, 'Root 1');
-		assert.strictEqual(roots[0].children[1].data.name, 'Child 1.2');
-		assert.strictEqual(roots[0].children[1].parent.data.name, 'Root 1');
-		assert.strictEqual(roots[1].data.name, 'Root 2');
-		assert.strictEqual(roots[1].children[0].data.name, 'Child 2.1');
+		assert.strictEqual(roots[0].value.name, 'Root 1');
+		assert.strictEqual(roots[0].children[0].value.name, 'Child 1.1');
+		assert.strictEqual(roots[0].children[0].parent.value.name, 'Root 1');
+		assert.strictEqual(roots[0].children[1].value.name, 'Child 1.2');
+		assert.strictEqual(roots[0].children[1].parent.value.name, 'Root 1');
+		assert.strictEqual(roots[1].value.name, 'Root 2');
+		assert.strictEqual(roots[1].children[0].value.name, 'Child 2.1');
 	});
 
-	it('should build a tree with customized nodes keys', () => {
+	it('should build a tree with customized node keys', () => {
 		const items = [
 			{ id: 1, parent: null, name: 'Root 1' },
 			{ id: 2, parent: null, name: 'Root 2' },
@@ -58,7 +64,9 @@ describe('buildTree', () => {
 		];
 
 		const { roots, nodes } = buildTree(items, {
-			nodeDataKey: 'DATA',
+			id: 'id',
+			parentId: 'parent',
+			nodeValueKey: 'VALUE',
 			nodeParentKey: 'PARENT',
 			nodeChildrenKey: 'CHILDREN',
 		});
@@ -66,13 +74,13 @@ describe('buildTree', () => {
 		assert.strictEqual(roots.length, 2);
 		assert.deepStrictEqual([...nodes.keys()], [1, 2, 3, 4, 5]);
 
-		assert.strictEqual(roots[0].DATA.name, 'Root 1');
-		assert.strictEqual(roots[0].CHILDREN[0].DATA.name, 'Child 1.1');
-		assert.strictEqual(roots[0].CHILDREN[0].PARENT.DATA.name, 'Root 1');
-		assert.strictEqual(roots[0].CHILDREN[1].DATA.name, 'Child 1.2');
-		assert.strictEqual(roots[0].CHILDREN[1].PARENT.DATA.name, 'Root 1');
-		assert.strictEqual(roots[1].DATA.name, 'Root 2');
-		assert.strictEqual(roots[1].CHILDREN[0].DATA.name, 'Child 2.1');
+		assert.strictEqual(roots[0].VALUE.name, 'Root 1');
+		assert.strictEqual(roots[0].CHILDREN[0].VALUE.name, 'Child 1.1');
+		assert.strictEqual(roots[0].CHILDREN[0].PARENT.VALUE.name, 'Root 1');
+		assert.strictEqual(roots[0].CHILDREN[1].VALUE.name, 'Child 1.2');
+		assert.strictEqual(roots[0].CHILDREN[1].PARENT.VALUE.name, 'Root 1');
+		assert.strictEqual(roots[1].VALUE.name, 'Root 2');
+		assert.strictEqual(roots[1].CHILDREN[0].VALUE.name, 'Child 2.1');
 	});
 
 	it('should build a tree with parent keys disabled', () => {
@@ -85,6 +93,8 @@ describe('buildTree', () => {
 		];
 
 		const { roots } = buildTree(items, {
+			id: 'id',
+			parentId: 'parent',
 			nodeParentKey: false,
 		});
 
@@ -102,7 +112,9 @@ describe('buildTree', () => {
 		];
 
 		const { roots } = buildTree(items, {
-			nodeDataKey: false,
+			id: 'id',
+			parentId: 'parent',
+			nodeValueKey: false,
 		});
 
 		assert.strictEqual(roots[0].children[0].name, 'Child 1.1');
@@ -119,8 +131,9 @@ describe('buildTree', () => {
 		];
 
 		const { roots } = buildTree(items, {
-			mode: 'children',
-			nodeDataKey: false,
+			id: 'id',
+			childIds: 'children',
+			nodeValueKey: false,
 		});
 
 		assert.strictEqual(roots[0].children[0].name, 'Child 1.1');
@@ -137,13 +150,31 @@ describe('buildTree', () => {
 		];
 
 		const { roots } = buildTree(items, {
-			mapNodeData(item) {
+			id: 'id',
+			parentId: 'parent',
+			nodeValueMapper(item) {
 				return { title: item.name };
 			}
 		});
 
-		assert.deepStrictEqual(roots[0].children[0].data, { title: 'Child 1.1' });
-		assert.deepStrictEqual(roots[0].children[1].data, { title: 'Child 1.2' });
+		assert.deepStrictEqual(roots[0].children[0].value, { title: 'Child 1.1' });
+		assert.deepStrictEqual(roots[0].children[1].value, { title: 'Child 1.2' });
+	});
+
+	it('should throw when duplicate ids found', () => {
+		const items = [
+			{ id: 1, parent: null, name: 'Item 1' },
+			{ id: 1, parent: null, name: 'Item 2' },
+		];
+
+		assert.throws(
+			() => buildTree(items, {
+				id: 'id',
+				parentId: 'parent',
+			}),
+			Error,
+			'Duplicate identifier "1".'
+		);
 	});
 
 	it('should handle circular references and throw an error #1', () => {
@@ -154,9 +185,13 @@ describe('buildTree', () => {
 		];
 
 		assert.throws(
-			() => buildTree(items, { validateTree: true }),
+			() => buildTree(items, {
+				id: 'id',
+				parentId: 'parent',
+				validateTree: true,
+			}),
 			Error,
-			'Tree validation error: Stucture is a cyclic graph.'
+			'Tree validation failed: detected a cycle or a node reachable via multiple paths.'
 		);
 	});
 
@@ -168,96 +203,13 @@ describe('buildTree', () => {
 		];
 
 		assert.throws(
-			() => buildTree(items, { validateTree: true }),
+			() => buildTree(items, {
+				id: 'id',
+				parentId: 'parent',
+				validateTree: true,
+			}),
 			Error,
-			'Tree validation error: Stucture is a cyclic graph.'
-		);
-	});
-
-	it('should handle duplicate identifiers and throw an error', () => {
-		const items = [
-			{ id: 1, parent: null, name: 'Item 1' },
-			{ id: 1, parent: null, name: 'Item 2' },
-		];
-
-		assert.throws(
-			() => buildTree(items),
-			Error,
-			'Duplicate identifier detected for "1"'
-		);
-	});
-
-	it('should validate root keys without thrown error when no error', () => {
-		const items = [
-			{ id: 1, parent: null, name: 'Item 1' },
-			{ id: 2, parent: 1, name: 'Item 2' },
-		];
-
-		const { roots } = buildTree(items, { validRootKeys: [1] });
-
-		assert.deepStrictEqual(roots[0].children[0].data.name, 'Item 2');
-	});
-
-	it('should validate root parent keys without thrown error when no error', () => {
-		const items = [
-			{ id: 1, parent: null, name: 'Item 1' },
-			{ id: 2, parent: 1, name: 'Item 2' },
-		];
-
-		const { roots } = buildTree(items, { validRootParentKeys: [null] });
-
-		assert.deepStrictEqual(roots[0].children[0].data.name, 'Item 2');
-	});
-
-	it('should handle invalid parent keys and throw an error', () => {
-		const items = [
-			{ id: 1, parent: null, name: 'Item 1' },
-			{ id: 2, parent: 3, name: 'Item 2' },
-		];
-
-		assert.throws(
-			() => buildTree(items, { validRootParentKeys: [null] }),
-			Error,
-			'Invalid parent key "3"'
-		);
-	});
-
-	it('should handle invalid keys and throw an error', () => {
-		const items = [
-			{ id: 'a', children: ['b'], name: 'Item 1' },
-			{ id: 'b', name: 'Item 2' },
-		];
-
-		assert.throws(
-			() => buildTree(items, { validRootKeys: ['c'] }),
-			Error,
-			'A root node has an invalid key "a"'
-		);
-	});
-
-	it('should throw when validate root parent keys set with mode: children', () => {
-		const items = [
-			{ id: 1, parent: null, name: 'Item 1' },
-			{ id: 2, parent: 1, name: 'Item 2' },
-		];
-
-		assert.throws(
-			() => buildTree(items, { validRootParentKeys: [null], mode: 'children' }),
-			Error,
-			'Option "validRootParentKeys" cannot be used when mode is set to "children".'
-		);
-	});
-
-	it('should throw when duplicate ids found', () => {
-		const items = [
-			{ id: 1, parent: null, name: 'Item 1' },
-			{ id: 1, parent: null, name: 'Item 2' },
-		];
-
-		assert.throws(
-			() => buildTree(items, { mode: 'children' }),
-			Error,
-			'Duplicate identifier detected for "1"'
+			'Tree validation failed: detected a cycle or a node reachable via multiple paths.'
 		);
 	});
 });
