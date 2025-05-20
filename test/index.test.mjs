@@ -1,5 +1,5 @@
 import assert from 'assert';
-import buildTree from '../index.js';
+import buildTree from '../index.mjs';
 
 describe('buildTree', () => {
 	it('should build a tree with root and child nodes', () => {

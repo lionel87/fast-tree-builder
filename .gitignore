@@ -4,6 +4,8 @@
 *.tgz
 /*.d.ts
 /*.js
+/*.d.cts
 /*.cjs
+/*.d.mts
 /*.mjs
 !/.eslintrc.cjs
