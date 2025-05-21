@@ -9,7 +9,7 @@ try {
 	renameSync('build/index.d.mts', 'index.d.mts');
 	const dmts = readFileSync('index.d.mts', 'utf-8');
 	const dcts = dmts
-		.replace('export default function buildTree', 'function buildTree')
+		.replace('export default function buildTree', 'declare function buildTree')
 		.replace('export {};', 'declare const _default: { default: typeof buildTree };\nexport = _default;');
 	writeFileSync('index.d.cts', dcts);
 } catch (error) {
