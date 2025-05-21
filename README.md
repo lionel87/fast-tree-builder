@@ -6,30 +6,30 @@
 [![Coverage Status](https://coveralls.io/repos/github/lionel87/fast-tree-builder/badge.svg?branch=master)](https://coveralls.io/github/lionel87/fast-tree-builder?branch=master)
 ![Maintenance](https://img.shields.io/maintenance/yes/2025)
 
-`fast-tree-builder` is a high-performance TypeScript-first utility for constructing trees from iterable collections. It supports flexible input formats and fully customizable output node structures, enabling safe and idiomatic manipulation of hierarchical data.
+`fast-tree-builder` is a utility for easy tree building from iterable collections, enabling safe and predictable access to hierarchical data. It supports highly customizable input and output shapes.
 
 
 ## Prerequisites
 
 - You have a list of items,
 - each item is identifiable by a unique id,
-- the items are connected via a *parent id* OR *children ids*.
+- the items are connected via a *parent id* OR *child ids*.
 
 
 ## Features
 
-- **Fully Typed and Customizable** – TypeScript support with correct types for the built tree.
-- **Supports Both `parentId` and `childIds` Models** – Choose your relation style via options.
-- **Iterable Input Support** – Works on arrays, sets, or any iterable.
-- **Flexible Key Types** – Anything can be an identifier. Relations checked with (`childKey === parentKey`) comparison.
-- **Fully Customizable Node Structure**: Design the node structure as you like.
-- **O(n) Tree Construction** – Efficient building from unordered data, no sorting needed.
+- **Supports `parentId` and `childIds` Models** – Choose your relation style via options.
+- **Fully Typed** – TypeScript support with correct types for the built tree.
+- **Highly Customizable** – Design the node structure as you like.
+- **Any Iterable Accepted** – Works on arrays, sets, or any iterable type.
+- **Flexible ID Types** – Anything can be an identifier; relations matched with `childId === parentId`.
+- **Efficient Tree Construction** – Builds trees from unordered data in O(n) time.
 - **Bi-Directional Tree Links** – Nodes can store both `children` and `parent` references.
-- **Multi-Root Support** – Handles disjoint trees naturally if no virtual root is present.
-- **Map of Nodes** – Returned `Map` allows constant-time access to any node.
+- **Multi-Root Support** – Handles disjoint trees naturally.
+- **Arbitary Node Access** – Returns a `Map` that allows constant-time access to any node.
 - **Tree Validation** – Detects cycles or nodes reachable through multiple paths.
 - **Reference Validation** – Optionally enforce that all parent/child links are valid.
-
+- **Depth Values** – Optionally includes a depth value in each node.
 
 ## Installation
 
@@ -61,8 +61,8 @@ Builds a tree structure from an iterable list of items.
 
 ##### One of:
 
-- `parentId`: A key or function returning the parent ID of the item.
-- `childIds`: A key or function returning an iterable of child IDs for the item.
+- `parentId`: A key or function that access the parent ID of the item.
+- `childIds`: A key or function that access an iterable of child IDs for the item.
 
 ##### Optional
 
@@ -78,15 +78,15 @@ Builds a tree structure from an iterable list of items.
 
 ```ts
 {
-  roots: TreeNode[],                // top-level nodes
-  nodes: Map<id, TreeNode>          // all nodes by id
+  roots: TreeNode[],         // top-level nodes
+  nodes: Map<id, TreeNode>   // all nodes by id
 }
 ```
 
 #### Throws
 
 - Missing required `id`, `parentId`/`childIds`, or `options` parameter
-- Duplicate item identifiers
+- Duplicate item identifiers in input
 - Invalid reference (if `validateReferences` is enabled)
 - Cycle or structural error (if `validateTree` or `withDepth` is enabled)
 

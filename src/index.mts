@@ -201,7 +201,7 @@ export default function buildTree<
 
 			nodes.set(id, node);
 
-			// Link this node to its parent
+			// Link this node with its parent
 			const parentId = typeof parentIdAccessor === 'function' ? parentIdAccessor(item) : item[parentIdAccessor];
 			const parentNode = nodes.get(parentId);
 			if (parentNode) {
@@ -219,7 +219,7 @@ export default function buildTree<
 				}
 			}
 
-			// Link this node to its children
+			// Link this node with its children
 			const children = waitingForParent.get(id);
 			if (children) {
 				node[nodeChildrenKey] = children;
@@ -265,7 +265,7 @@ export default function buildTree<
 
 			nodes.set(id, node);
 
-			// Link this node to its children
+			// Link this node with its children
 			const childIds = typeof childIdsAccessor === 'function' ? childIdsAccessor(item) : item[childIdsAccessor];
 			if (childIds != null) {
 				if (typeof childIds[Symbol.iterator] !== 'function') {
@@ -303,7 +303,7 @@ export default function buildTree<
 				}
 			}
 
-			// Link this node to its parent
+			// Link this node with its parent
 			const parentDescriptor = waitingChildren.get(id);
 			if (parentDescriptor) {
 				const { parentNode, childIndex } = parentDescriptor;
