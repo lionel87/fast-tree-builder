@@ -72,7 +72,7 @@ Builds a tree structure from an iterable list of items.
 - `nodeChildrenKey`: Key where the node's children are stored. Default: `'children'`.
 - `withDepth`: When `true`, adds a `depth` property to each node indicating its depth in the tree. Also implies `validateTree`. Default: `false`.
 - `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Errors are thrown on invalid references. Default: `false`.
-- `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or multi-path references). Errors are thrown if the check fails. Default: `false`.
+- `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multipla paths). Errors are thrown if the check fails. Default: `false`.
 
 #### Returns
 

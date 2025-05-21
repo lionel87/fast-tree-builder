@@ -126,7 +126,7 @@ export default function buildTree<
 	 *
 	 * Throws if the structure is not a proper tree.
 	 *
-	 * Defaults to `false`
+	 * Defaults to `false`.
 	 */
 	validateTree?: boolean;
 
@@ -139,7 +139,7 @@ export default function buildTree<
 	 *
 	 * Any invalid or missing references will result in an error during tree construction.
 	 *
-	 * Defaults to `false`
+	 * Defaults to `false`.
 	 */
 	validateReferences?: boolean;
 } & ({
