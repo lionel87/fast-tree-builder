@@ -42,7 +42,7 @@ type AccessorReturnType<T, P extends (keyof T) | ((item: T) => any)> =
 	never;
 
 type IterableKeys<T> = {
-	[K in keyof T]: T[K] extends Iterable<unknown> ? K : never
+	[K in keyof T]: T[K] extends Iterable<unknown> & object ? K : never;
 }[keyof T];
 
 export default function buildTree<
@@ -78,7 +78,7 @@ export default function buildTree<
 	 *
 	 * Either `parentId` or `childIds` must be provided.
 	 */
-	childIds?: IterableKeys<TInputValue> | ((item: TInputValue) => Iterable<unknown> | null | undefined);
+	childIds?: IterableKeys<TInputValue> | ((item: TInputValue) => (Iterable<unknown> & object) | null | undefined);
 
 	/**
 	 * Maps the input item to a different value stored in the resulting tree node.
@@ -144,7 +144,7 @@ export default function buildTree<
 	validateReferences?: boolean;
 } & ({
 	parentId?: never;
-	childIds: IterableKeys<TInputValue> | ((item: TInputValue) => unknown[] | null | undefined);
+	childIds: IterableKeys<TInputValue> | ((item: TInputValue) => (Iterable<unknown> & object) | null | undefined);
 } | {
 	parentId: (keyof TInputValue) | ((item: TInputValue) => unknown);
 	childIds?: never;
