@@ -67,20 +67,6 @@ export default function buildTree<
 	id: TIdAccessor;
 
 	/**
-	 * A string key or function used to get the item's parent identifier.
-	 *
-	 * Either `parentId` or `childIds` must be provided.
-	 */
-	parentId?: (keyof TInputValue) | ((item: TInputValue) => unknown);
-
-	/**
-	 * A string key or function to retrieve a list of child identifiers from an item.
-	 *
-	 * Either `parentId` or `childIds` must be provided.
-	 */
-	childIds?: IterableKeys<TInputValue> | ((item: TInputValue) => (Iterable<unknown> & object) | null | undefined);
-
-	/**
 	 * Maps the input item to a different value stored in the resulting tree node.
 	 */
 	nodeValueMapper?: { (item: TInputValue): TMappedValue };
@@ -143,10 +129,32 @@ export default function buildTree<
 	 */
 	validateReferences?: boolean;
 } & ({
+	/**
+	 * A string key or function used to get the item's parent identifier.
+	 *
+	 * Either `parentId` or `childIds` must be provided.
+	 */
 	parentId?: never;
+
+	/**
+	 * A string key or function to retrieve a list of child identifiers from an item.
+	 *
+	 * Either `parentId` or `childIds` must be provided.
+	 */
 	childIds: IterableKeys<TInputValue> | ((item: TInputValue) => (Iterable<unknown> & object) | null | undefined);
 } | {
+	/**
+	 * A string key or function used to get the item's parent identifier.
+	 *
+	 * Either `parentId` or `childIds` must be provided.
+	 */
 	parentId: (keyof TInputValue) | ((item: TInputValue) => unknown);
+
+	/**
+	 * A string key or function to retrieve a list of child identifiers from an item.
+	 *
+	 * Either `parentId` or `childIds` must be provided.
+	 */
 	childIds?: never;
 })): {
 	roots: TTreeNode[];
