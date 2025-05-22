@@ -1,65 +1,46 @@
 type TreeNode<
 	TValue,
-	TValueKey extends string | number | symbol | false,
-	TParentKey extends string | number | symbol | false,
-	TChildrenKey extends string | number | symbol,
-	TWithDepth extends boolean
+	TValueKey extends PropertyKey | false,
+	TParentKey extends PropertyKey | false,
+	TChildrenKey extends PropertyKey,
+	TDepthKey extends PropertyKey | false
 > =
 	& (TValueKey extends false
-		? (
-			TParentKey extends false
-			? Omit<TValue, TChildrenKey> & {
-				[k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>[];
-			}
-			: Omit<TValue, Exclude<TParentKey, false> | TChildrenKey> & {
-				[k in Exclude<TParentKey, false>]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>;
-			} & {
-				[k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>[];
-			}
-		)
-		: (
-			TParentKey extends false
-			? {
-				[k in Exclude<TValueKey, false>]: TValue;
-			} & {
-				[k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>[];
-			}
-			: {
-				[k in Exclude<TValueKey, false>]: TValue;
-			} & {
-				[k in Exclude<TParentKey, false>]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>;
-			} & {
-				[k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TWithDepth>[];
-			}
-		)
+		? Omit<TValue, Exclude<TParentKey, false> | TChildrenKey | Exclude<TDepthKey, false>>
+		: { [k in Exclude<TValueKey, false>]: TValue; }
 	)
-	& (TWithDepth extends true ? { depth: number; } : {})
+	& (TParentKey extends false
+		? { [k in Exclude<TParentKey, false>]: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey>; }
+		: {}
+	)
+	& { [k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey>[]; }
+	& (TDepthKey extends false
+		? { [k in Exclude<TDepthKey, false>]: number; }
+		: {}
+	)
 	;
 
-type AccessorReturnType<T, P extends (keyof T) | ((item: T) => any)> =
-	P extends ((item: T) => infer R) ? R :
-	P extends (keyof T) ? T[P] :
+type AccessorReturnType<O, P extends (keyof O) | ((item: O) => any)> =
+	P extends ((item: O) => infer R) ? R :
+	P extends (keyof O) ? O[P] :
 	never;
 
-type IterableKeys<T> = {
+type ObjectKeysOfIterableProperties<T> = {
 	[K in keyof T]: T[K] extends Iterable<unknown> & object ? K : never;
 }[keyof T];
 
 export default function buildTree<
-	TInputValue extends (TIdAccessor extends (keyof TInputValue)
-		? object
-		: (TNodeValueKey extends false
-			? object
-			: unknown
-		)
-	),
-	TIdAccessor extends (keyof TInputValue) | ((item: TInputValue) => unknown),
+	TIdAccessor extends (keyof NoInfer<TInputValue>) | ((item: NoInfer<TInputValue>) => unknown),
+	TNodeValueKey extends PropertyKey | false = 'value',
+	TNodeParentKey extends PropertyKey | false = 'parent',
+	TNodeChildrenKey extends PropertyKey = 'children',
+	TNodeDepthKey extends PropertyKey | false = false,
+	TInputValue extends (
+		TNodeValueKey extends false ? object :
+		TIdAccessor extends PropertyKey ? object :
+		unknown
+	) = any,
 	TMappedValue extends (TNodeValueKey extends false ? object : unknown) = TInputValue,
-	TNodeValueKey extends string | number | symbol | false = 'value',
-	TNodeParentKey extends string | number | symbol | false = 'parent',
-	TNodeChildrenKey extends string | number | symbol = 'children',
-	TWithDepth extends boolean = false,
-	TTreeNode = TreeNode<TMappedValue extends undefined ? TInputValue : TMappedValue, TNodeValueKey, TNodeParentKey, TNodeChildrenKey, TWithDepth>
 >(items: Iterable<TInputValue>, options: {
 	/**
 	 * A string key or function used to get the item's unique identifier.
@@ -69,10 +50,12 @@ export default function buildTree<
 	/**
 	 * Maps the input item to a different value stored in the resulting tree node.
 	 */
-	nodeValueMapper?: { (item: TInputValue): TMappedValue };
+	nodeValueMapper?: { (item: NoInfer<TInputValue>): TMappedValue; };
 
 	/**
-	 * Object key used to store the mapped value in the output tree node.
+	 * Object key used to store the input item in the output tree node.
+	 *
+	 * Setting to `false` merges the item into the node itself.
 	 *
 	 * Defaults to `'value'`.
 	 */
@@ -80,6 +63,8 @@ export default function buildTree<
 
 	/**
 	 * Object key used to store the reference to the parent node in the output tree node.
+	 *
+	 * Setting to `false` turns off this feature.
 	 *
 	 * Defaults to `'parent'`.
 	 */
@@ -93,15 +78,17 @@ export default function buildTree<
 	nodeChildrenKey?: TNodeChildrenKey;
 
 	/**
-	 * When enabled, adds a `depth` property to each output node indicating its depth within the tree.
+	 * Object key used to store a value indicating the node depth in the tree on each output node.
 	 * Root nodes have a depth of 0.
 	 *
-	 * This also implicitly enables `validateTree`, as depth assignment requires a valid tree structure,
-	 * and both operations share the same traversal logic.
+	 * Setting to `false` turns off this feature.
+	 *
+	 * Enables `validateTree`, as depth assignment requires a valid tree structure,
+	 * and both operations also share the same traversal logic.
 	 *
 	 * Defaults to `false`.
 	 */
-	withDepth?: TWithDepth;
+	nodeDepthKey?: TNodeDepthKey;
 
 	/**
 	 * Validates that the final structure forms a tree.
@@ -141,14 +128,14 @@ export default function buildTree<
 	 *
 	 * Either `parentId` or `childIds` must be provided.
 	 */
-	childIds: IterableKeys<TInputValue> | ((item: TInputValue) => (Iterable<unknown> & object) | null | undefined);
+	childIds: ObjectKeysOfIterableProperties<NoInfer<TInputValue>> | ((item: NoInfer<TInputValue>) => (Iterable<unknown> & object) | null | undefined);
 } | {
 	/**
 	 * A string key or function used to get the item's parent identifier.
 	 *
 	 * Either `parentId` or `childIds` must be provided.
 	 */
-	parentId: (keyof TInputValue) | ((item: TInputValue) => unknown);
+	parentId: (keyof NoInfer<TInputValue>) | ((item: NoInfer<TInputValue>) => unknown);
 
 	/**
 	 * A string key or function to retrieve a list of child identifiers from an item.
@@ -157,8 +144,23 @@ export default function buildTree<
 	 */
 	childIds?: never;
 })): {
-	roots: TTreeNode[];
-	nodes: Map<AccessorReturnType<TInputValue, TIdAccessor>, TTreeNode>;
+	roots: TreeNode<
+		TMappedValue extends undefined ? TInputValue : TMappedValue,
+		TNodeValueKey,
+		TNodeParentKey,
+		TNodeChildrenKey,
+		TNodeDepthKey
+	>[];
+	nodes: Map<
+		AccessorReturnType<TInputValue, TIdAccessor>,
+		TreeNode<
+			TMappedValue extends undefined ? TInputValue : TMappedValue,
+			TNodeValueKey,
+			TNodeParentKey,
+			TNodeChildrenKey,
+			TNodeDepthKey
+		>
+	>;
 } {
 	if (!options) {
 		// TS types prevents this but its better to check
@@ -172,7 +174,7 @@ export default function buildTree<
 		nodeValueKey = 'value',
 		nodeParentKey = 'parent',
 		nodeChildrenKey = 'children',
-		withDepth = false,
+		nodeDepthKey = false,
 		validateTree = false,
 		validateReferences = false,
 	} = options;
@@ -356,6 +358,10 @@ export default function buildTree<
 		}
 	}
 
+	const withDepth = typeof nodeDepthKey === 'string'
+		|| typeof nodeDepthKey === 'symbol'
+		|| typeof nodeDepthKey === 'number';
+
 	if (validateTree || withDepth) {
 		if (roots.length === 0 && nodes.size > 0) {
 			throw new Error('Tree validation failed: detected a cycle.');
@@ -376,7 +382,7 @@ export default function buildTree<
 			visited.add(node);
 
 			if (withDepth) {
-				node.depth = depth;
+				node[nodeDepthKey] = depth;
 			}
 
 			if (node[nodeChildrenKey]) {
