@@ -66,7 +66,7 @@ Builds a tree structure from an iterable list of items.
 
 ##### Optional
 
-- `nodeValueMapper`: Function to map an item to a custom value stored in the node. Optional.
+- `nodeValueMapper`: Function to map an item to a custom value stored in the node.
 - `nodeValueKey`: Key where the item is stored in the output node. Set to `false` to inline the item directly into the node. Defaults to `'value'`.
 - `nodeParentKey`: Key where the node's parent reference is stored. Set to `false` to omit parent links. Defaults to `'parent'`.
 - `nodeChildrenKey`: Key where the node's children are stored. Defaults to `'children'`.
