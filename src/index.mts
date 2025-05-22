@@ -55,7 +55,7 @@ export default function buildTree<
 	/**
 	 * Object key used to store the input item in the output tree node.
 	 *
-	 * Setting to `false` merges the item into the node itself.
+	 * Set to `false` to merge the item into the node itself.
 	 *
 	 * Defaults to `'value'`.
 	 */
@@ -64,7 +64,7 @@ export default function buildTree<
 	/**
 	 * Object key used to store the reference to the parent node in the output tree node.
 	 *
-	 * Setting to `false` turns off this feature.
+	 * Set to `false` to omit parent links.
 	 *
 	 * Defaults to `'parent'`.
 	 */
@@ -81,7 +81,7 @@ export default function buildTree<
 	 * Object key used to store a value indicating the node depth in the tree on each output node.
 	 * Root nodes have a depth of 0.
 	 *
-	 * Setting to `false` turns off this feature.
+	 * Set to `false` to omit depth values.
 	 *
 	 * Enables `validateTree`, as depth assignment requires a valid tree structure,
 	 * and both operations also share the same traversal logic.
