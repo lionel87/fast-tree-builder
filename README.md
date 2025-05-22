@@ -67,12 +67,12 @@ Builds a tree structure from an iterable list of items.
 ##### Optional
 
 - `nodeValueMapper`: Function to map an item to a custom value stored in the node. Optional.
-- `nodeValueKey`: Key where the item's data is stored in the output node. Set to `false` to inline the item directly into the node. Default: `'value'`.
-- `nodeParentKey`: Key where the node's parent reference is stored. Set to `false` to omit parent links. Default: `'parent'`.
-- `nodeChildrenKey`: Key where the node's children are stored. Default: `'children'`.
-- `withDepth`: When `true`, adds a `depth` property to each node indicating its depth in the tree. Also implies `validateTree`. Default: `false`.
-- `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Errors are thrown on invalid references. Default: `false`.
-- `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multipla paths). Errors are thrown if the check fails. Default: `false`.
+- `nodeValueKey`: Key where the item is stored in the output node. Set to `false` to inline the item directly into the node. Defaults to `'value'`.
+- `nodeParentKey`: Key where the node's parent reference is stored. Set to `false` to omit parent links. Defaults to `'parent'`.
+- `nodeChildrenKey`: Key where the node's children are stored. Defaults to `'children'`.
+- `nodeDepthKey`: Object key used to store the node's depth in the tree (root = 0). Set to `false` to omit depth values. Turns on `validateTree` when a string value is set here. Defaults to `false`.
+- `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Errors are thrown on invalid references. Defaults to `false`.
+- `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multipla paths). Errors are thrown if the check fails. Defaults to `false`.
 
 #### Returns
 
@@ -88,7 +88,7 @@ Builds a tree structure from an iterable list of items.
 - Missing required `id`, `parentId`/`childIds`, or `options` parameter
 - Duplicate item identifiers in input
 - Invalid reference (if `validateReferences` is enabled)
-- Cycle or structural error (if `validateTree` or `withDepth` is enabled)
+- Cycle or structural error (if `validateTree` is enabled or `nodeDepthKey` is string)
 
 
 ## Usage
