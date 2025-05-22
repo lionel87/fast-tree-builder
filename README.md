@@ -29,7 +29,7 @@
 - **Arbitary Node Access** – Returns a `Map` that allows constant-time access to any node.
 - **Tree Validation** – Detects cycles or nodes reachable through multiple paths.
 - **Reference Validation** – Optionally enforce that all parent/child links are valid.
-- **Depth Values** – Optionally includes a depth value in each node.
+- **Depth Values** – Optionally include a depth value in each node.
 
 ## Installation
 
