@@ -26,7 +26,7 @@ type AccessorReturnType<O, P extends (keyof O) | ((item: O) => any)> =
 	never;
 
 type ObjectKeysOfIterableProperties<T> = {
-	[K in keyof T]: T[K] extends Iterable<unknown> & object ? K : never;
+	[K in keyof T]: T[K] extends (Iterable<unknown> & object) | null | undefined ? K : never;
 }[keyof T];
 
 export default function buildTree<
