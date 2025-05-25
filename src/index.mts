@@ -164,7 +164,7 @@ export default function buildTree<
 } {
 	if (!options) {
 		// TS types prevents this but its better to check
-		throw new Error('Missing required "options" parameter.');
+		throw new Error(`Missing required 'options' parameter.`);
 	}
 	const {
 		id: idAccessor,
@@ -180,13 +180,13 @@ export default function buildTree<
 	} = options;
 
 	if (!idAccessor) {
-		throw new Error('Option "id" is required.');
+		throw new Error(`Option 'id' is required.`);
 	}
 	if (!parentIdAccessor && !childIdsAccessor) {
-		throw new Error('Either "parentId" or "childIds" must be provided.');
+		throw new Error(`Either 'parentId' or 'childIds' must be provided.`);
 	}
 	if (parentIdAccessor && childIdsAccessor) {
-		throw new Error('"parentId" and "childIds" cannot be used together.');
+		throw new Error(`'parentId' and 'childIds' cannot be used together.`);
 	}
 
 	const roots = [];
@@ -202,7 +202,7 @@ export default function buildTree<
 			const id = typeof idAccessor === 'function' ? idAccessor(item) : item[idAccessor];
 
 			if (nodes.has(id)) {
-				throw new Error(`Duplicate identifier "${id}".`);
+				throw new Error(`Duplicate identifier '${id}'.`);
 			}
 
 			const node = nodeValueKey !== false
@@ -247,7 +247,7 @@ export default function buildTree<
 		// Finalize roots
 		for (const [parentId, nodes] of waitingForParent.entries()) {
 			if (validateReferences && parentId != null) {
-				throw new Error(`Referential integrity violation: parentId "${parentId}" does not match any item in the input.`);
+				throw new Error(`Referential integrity violation: parentId '${parentId}' does not match any item in the input.`);
 			}
 			for (const node of nodes) {
 				roots.push(node);
@@ -266,11 +266,11 @@ export default function buildTree<
 			const id = typeof idAccessor === 'function' ? idAccessor(item) : item[idAccessor];
 
 			if (nodes.has(id)) {
-				throw new Error(`Duplicate identifier "${id}".`);
+				throw new Error(`Duplicate identifier '${id}'.`);
 			}
 
 			const node = nodeValueKey !== false
-				? { [nodeValueKey as any]: nodeValueMapper ? nodeValueMapper(item) : item }
+				? { [nodeValueKey as PropertyKey]: nodeValueMapper ? nodeValueMapper(item) : item }
 				: { ...(nodeValueMapper ? nodeValueMapper(item) : item) };
 
 			nodes.set(id, node);
@@ -280,7 +280,7 @@ export default function buildTree<
 			if (childIds != null) {
 				if (typeof childIds[Symbol.iterator] !== 'function') {
 					// TS types prevents this but its better to check
-					throw new Error(`Item "${id}" has invalid children: expected an iterable value.`);
+					throw new Error(`Item '${id}' has invalid children: expected an iterable value.`);
 				}
 
 				node[nodeChildrenKey] = [];
@@ -292,7 +292,7 @@ export default function buildTree<
 
 						if (nodeParentKey !== false) {
 							if (childNode[nodeParentKey] && childNode[nodeParentKey] !== node) {
-								throw new Error(`Node "${childId}" already has a different parent, refusing to overwrite. Set "nodeParentKey" to false to supress this error.`);
+								throw new Error(`Node '${childId}' already has a different parent, refusing to overwrite.`);
 							}
 							childNode[nodeParentKey] = node;
 						}
@@ -322,7 +322,7 @@ export default function buildTree<
 
 				if (nodeParentKey !== false) {
 					if (node[nodeParentKey] && node[nodeParentKey] !== parentNode) {
-						throw new Error(`Node "${id}" already has a different parent, refusing to overwrite. Set "nodeParentKey" to false to supress this error.`);
+						throw new Error(`Node '${id}' already has a different parent, refusing to overwrite.`);
 					}
 					node[nodeParentKey] = parentNode;
 				}
@@ -336,7 +336,7 @@ export default function buildTree<
 		if (waitingChildren.size > 0) {
 			if (validateReferences) {
 				const childId = waitingChildren.keys().next().value;
-				throw new Error(`Referential integrity violation: child reference "${childId}" does not match any item in the input.`);
+				throw new Error(`Referential integrity violation: child reference '${childId}' does not match any item in the input.`);
 			}
 
 			// Remove unresolved children
