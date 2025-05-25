@@ -209,6 +209,14 @@ export default function buildTree<
 				? { [nodeValueKey as any]: nodeValueMapper ? nodeValueMapper(item) : item }
 				: { ...(nodeValueMapper ? nodeValueMapper(item) : item) };
 
+			if (nodeValueKey === false) {
+				if (nodeParentKey !== false) {
+					delete node[nodeParentKey];
+				}
+				delete node[nodeChildrenKey];
+				// no need to delete 'nodeDepthKey' here
+			}
+
 			nodes.set(id, node);
 
 			// Link this node with its parent
@@ -272,6 +280,14 @@ export default function buildTree<
 			const node = nodeValueKey !== false
 				? { [nodeValueKey as PropertyKey]: nodeValueMapper ? nodeValueMapper(item) : item }
 				: { ...(nodeValueMapper ? nodeValueMapper(item) : item) };
+
+			if (nodeValueKey === false) {
+				if (nodeParentKey !== false) {
+					delete node[nodeParentKey];
+				}
+				delete node[nodeChildrenKey];
+				// no need to delete 'nodeDepthKey' here
+			}
 
 			nodes.set(id, node);
 
