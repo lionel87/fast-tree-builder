@@ -22,7 +22,7 @@
     "build": "node scripts/build.mjs",
     "watch": "node scripts/watch.mjs",
     "test": "mocha",
-    "coverage": "c8 -r text -r text-summary -r lcov --include \"*.js\" npm test"
+    "coverage": "c8 -r text -r text-summary -r lcov --include \"*.mjs\" npm test"
   },
   "devDependencies": {
     "c8": "^10.1.3",
