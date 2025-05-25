@@ -6,7 +6,7 @@ rm('coverage');
 rm('build');
 
 for (const file of readdirSync('.')) {
-	if (!file.startsWith('.') && ['.js', '.cjs', '.mjs', '.d.ts'].some(x => file.endsWith(x))) {
+	if (!file.startsWith('.') && ['.js', '.d.ts', '.cjs', '.d.cts', '.mjs', '.d.mts'].some(x => file.endsWith(x))) {
 		rm(file);
 	}
 }
