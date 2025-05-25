@@ -10,13 +10,13 @@ type TreeNode<
 		: { [k in Exclude<TValueKey, false>]: TValue; }
 	)
 	& (TParentKey extends false
-		? { [k in Exclude<TParentKey, false>]: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey>; }
-		: {}
+		? {}
+		: { [k in Exclude<TParentKey, false>]: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey>; }
 	)
 	& { [k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey>[]; }
 	& (TDepthKey extends false
-		? { [k in Exclude<TDepthKey, false>]: number; }
-		: {}
+		? {}
+		: { [k in Exclude<TDepthKey, false>]: number; }
 	)
 	;
 
