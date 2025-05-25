@@ -315,6 +315,10 @@ export default function buildTree<
 
 						rootCandidates.delete(childId);
 					} else {
+						if (waitingChildren.has(childId)) {
+							throw new Error(`Multiple parents reference the same unresolved child '${childId}'.`);
+						}
+
 						waitingChildren.set(childId, {
 							parentNode: node,
 							childIndex: node[nodeChildrenKey].length,
