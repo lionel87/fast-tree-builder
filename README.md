@@ -71,13 +71,19 @@ Builds a tree structure from an iterable list of items.
 - `parentKey`: Key where the node's parent reference is stored in the output node. Set to `false` to omit parent links. Defaults to `'parent'`.
 - `childrenKey`: Key where the node's children are stored in the output node. Defaults to `'children'`.
 - `depthKey`: Key where the node's depth (with root = 0) is stored in the output node. Set to `false` to omit depth values. Setting this enables validateTree implicitly, as depth calculation requires full tree validation. Defaults to `false`.
-- `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Errors are thrown on invalid references. Defaults to `false`.
+- `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Only `null` and `undefined` are acceptable parent ids for root nodes when enabled. Errors are thrown on invalid references. Defaults to `false`.
 - `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multiple paths). Errors are thrown if the check fails. Defaults to `false`.
 
-> **Accessors vs. Output Keys**
+> **Input Accessors vs. Output Keys**
 >
-> * `id`, `parentId`, `childIds` works on the input item and can be property names or functions.
+> * `id`, `parentId`, `childIds` works on the input item and can be property names or functions. The library does not make any assumption what an id should be so we purposely allow `null` and `undefined` as a valid id too!
 > * `valueKey`, `parentKey`, `childrenKey`, `depthKey` are always strings or `false` and are used as keys in the output nodes.
+
+> **'validateReferences' option**
+>
+> Validation operates differently when in `parentId` mode and in `childIds` mode!
+> * in `parentId` mode: validates that the parent ids of root nodes was `null` or `undefined` and nothing else. If you expect these parent ids to be other than `null` or `undefined`, you can safely turn off this validation and loop trough on the roots manually to check the original parentId values are the ones you expect.
+> * in `childIds` mode: validates that every referenced child is resolved. Even if the child list contains `undefined`, a node with an `undefined` as ID must exist in the input.
 
 #### Returns
 
