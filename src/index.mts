@@ -31,16 +31,16 @@ type ObjectKeysOfIterableProperties<T> = {
 
 export default function buildTree<
 	TIdAccessor extends (keyof NoInfer<TInputValue>) | ((item: NoInfer<TInputValue>) => unknown),
-	TNodeValueKey extends PropertyKey | false = 'value',
-	TNodeParentKey extends PropertyKey | false = 'parent',
-	TNodeChildrenKey extends PropertyKey = 'children',
-	TNodeDepthKey extends PropertyKey | false = false,
+	TValueKey extends PropertyKey | false = 'value',
+	TParentKey extends PropertyKey | false = 'parent',
+	TChildrenKey extends PropertyKey = 'children',
+	TDepthKey extends PropertyKey | false = false,
 	TInputValue extends (
-		TNodeValueKey extends false ? object :
+		TValueKey extends false ? object :
 		TIdAccessor extends PropertyKey ? object :
 		unknown
 	) = any,
-	TMappedValue extends (TNodeValueKey extends false ? object : unknown) = TInputValue,
+	TResolvedValue extends (TValueKey extends false ? object : unknown) = TInputValue,
 >(items: Iterable<TInputValue>, options: {
 	/**
 	 * A string key or function used to get the item's unique identifier.
@@ -48,47 +48,47 @@ export default function buildTree<
 	id: TIdAccessor;
 
 	/**
-	 * Maps the input item to a different value stored in the resulting tree node.
+	 * Function to transform an item to a custom value stored in the node.
 	 */
-	nodeValueMapper?: { (item: NoInfer<TInputValue>): TMappedValue; };
+	valueResolver?: { (item: NoInfer<TInputValue>): TResolvedValue; };
 
 	/**
-	 * Object key used to store the input item in the output tree node.
+	 * Key where the item is stored in the output node.
 	 *
-	 * Set to `false` to merge the item into the node itself.
+	 * Set to `false` to inline the item directly into the node.
 	 *
 	 * Defaults to `'value'`.
 	 */
-	nodeValueKey?: TNodeValueKey;
+	valueKey?: TValueKey;
 
 	/**
-	 * Object key used to store the reference to the parent node in the output tree node.
+	 * Key where the node's parent reference is stored in the output node.
 	 *
 	 * Set to `false` to omit parent links.
 	 *
 	 * Defaults to `'parent'`.
 	 */
-	nodeParentKey?: TNodeParentKey;
+	parentKey?: TParentKey;
 
 	/**
-	 * Object key used to store the list of child nodes in the output tree node.
+	 * Key where the node's children are stored in the output node.
 	 *
 	 * Defaults to `'children'`.
 	 */
-	nodeChildrenKey?: TNodeChildrenKey;
+	childrenKey?: TChildrenKey;
 
 	/**
-	 * Object key used to store a value indicating the node depth in the tree on each output node.
+	 * Key where the node's depth is stored in the output node.
 	 * Root nodes have a depth of 0.
 	 *
 	 * Set to `false` to omit depth values.
 	 *
-	 * Enables `validateTree`, as depth assignment requires a valid tree structure,
-	 * and both operations also share the same traversal logic.
+	 * Automatically enables `validateTree` when a string value is set here:
+	 * Depth assignment requires a valid tree structure, and both operations also share the same traversal logic.
 	 *
 	 * Defaults to `false`.
 	 */
-	nodeDepthKey?: TNodeDepthKey;
+	depthKey?: TDepthKey;
 
 	/**
 	 * Validates that the final structure forms a tree.
@@ -145,20 +145,20 @@ export default function buildTree<
 	childIds?: never;
 })): {
 	roots: TreeNode<
-		TMappedValue extends undefined ? TInputValue : TMappedValue,
-		TNodeValueKey,
-		TNodeParentKey,
-		TNodeChildrenKey,
-		TNodeDepthKey
+		TResolvedValue extends undefined ? TInputValue : TResolvedValue,
+		TValueKey,
+		TParentKey,
+		TChildrenKey,
+		TDepthKey
 	>[];
 	nodes: Map<
 		AccessorReturnType<TInputValue, TIdAccessor>,
 		TreeNode<
-			TMappedValue extends undefined ? TInputValue : TMappedValue,
-			TNodeValueKey,
-			TNodeParentKey,
-			TNodeChildrenKey,
-			TNodeDepthKey
+			TResolvedValue extends undefined ? TInputValue : TResolvedValue,
+			TValueKey,
+			TParentKey,
+			TChildrenKey,
+			TDepthKey
 		>
 	>;
 } {
@@ -170,11 +170,11 @@ export default function buildTree<
 		id: idAccessor,
 		parentId: parentIdAccessor,
 		childIds: childIdsAccessor,
-		nodeValueMapper,
-		nodeValueKey = 'value',
-		nodeParentKey = 'parent',
-		nodeChildrenKey = 'children',
-		nodeDepthKey = false,
+		valueResolver,
+		valueKey = 'value',
+		parentKey = 'parent',
+		childrenKey = 'children',
+		depthKey = false,
 		validateTree = false,
 		validateReferences = false,
 	} = options;
@@ -205,16 +205,16 @@ export default function buildTree<
 				throw new Error(`Duplicate identifier '${id}'.`);
 			}
 
-			const node = nodeValueKey !== false
-				? { [nodeValueKey as any]: nodeValueMapper ? nodeValueMapper(item) : item }
-				: { ...(nodeValueMapper ? nodeValueMapper(item) : item) };
+			const node = valueKey !== false
+				? { [valueKey as any]: valueResolver ? valueResolver(item) : item }
+				: { ...(valueResolver ? valueResolver(item) : item) };
 
-			if (nodeValueKey === false) {
-				if (nodeParentKey !== false) {
-					delete node[nodeParentKey];
+			if (valueKey === false) {
+				if (parentKey !== false) {
+					delete node[parentKey];
 				}
-				delete node[nodeChildrenKey];
-				// no need to delete 'nodeDepthKey' here
+				delete node[childrenKey];
+				// no need to delete 'depthKey' here
 			}
 
 			nodes.set(id, node);
@@ -223,10 +223,10 @@ export default function buildTree<
 			const parentId = typeof parentIdAccessor === 'function' ? parentIdAccessor(item) : item[parentIdAccessor];
 			const parentNode = nodes.get(parentId);
 			if (parentNode) {
-				parentNode[nodeChildrenKey] ||= [];
-				parentNode[nodeChildrenKey].push(node);
-				if (nodeParentKey !== false) {
-					node[nodeParentKey] = parentNode;
+				parentNode[childrenKey] ||= [];
+				parentNode[childrenKey].push(node);
+				if (parentKey !== false) {
+					node[parentKey] = parentNode;
 				}
 			} else {
 				const siblings = waitingForParent.get(parentId);
@@ -240,11 +240,11 @@ export default function buildTree<
 			// Link this node with its children
 			const children = waitingForParent.get(id);
 			if (children) {
-				node[nodeChildrenKey] = children;
+				node[childrenKey] = children;
 
-				if (nodeParentKey !== false) {
+				if (parentKey !== false) {
 					for (const child of children) {
-						child[nodeParentKey] = node;
+						child[parentKey] = node;
 					}
 				}
 
@@ -277,16 +277,16 @@ export default function buildTree<
 				throw new Error(`Duplicate identifier '${id}'.`);
 			}
 
-			const node = nodeValueKey !== false
-				? { [nodeValueKey as PropertyKey]: nodeValueMapper ? nodeValueMapper(item) : item }
-				: { ...(nodeValueMapper ? nodeValueMapper(item) : item) };
+			const node = valueKey !== false
+				? { [valueKey as PropertyKey]: valueResolver ? valueResolver(item) : item }
+				: { ...(valueResolver ? valueResolver(item) : item) };
 
-			if (nodeValueKey === false) {
-				if (nodeParentKey !== false) {
-					delete node[nodeParentKey];
+			if (valueKey === false) {
+				if (parentKey !== false) {
+					delete node[parentKey];
 				}
-				delete node[nodeChildrenKey];
-				// no need to delete 'nodeDepthKey' here
+				delete node[childrenKey];
+				// no need to delete 'depthKey' here
 			}
 
 			nodes.set(id, node);
@@ -299,18 +299,18 @@ export default function buildTree<
 					throw new Error(`Item '${id}' has invalid children: expected an iterable value.`);
 				}
 
-				node[nodeChildrenKey] = [];
+				node[childrenKey] = [];
 
 				for (const childId of childIds) {
 					const childNode = nodes.get(childId);
 					if (childNode) {
-						node[nodeChildrenKey].push(childNode);
+						node[childrenKey].push(childNode);
 
-						if (nodeParentKey !== false) {
-							if (childNode[nodeParentKey] && childNode[nodeParentKey] !== node) {
+						if (parentKey !== false) {
+							if (childNode[parentKey] && childNode[parentKey] !== node) {
 								throw new Error(`Node '${childId}' already has a different parent, refusing to overwrite.`);
 							}
-							childNode[nodeParentKey] = node;
+							childNode[parentKey] = node;
 						}
 
 						rootCandidates.delete(childId);
@@ -321,15 +321,15 @@ export default function buildTree<
 
 						waitingChildren.set(childId, {
 							parentNode: node,
-							childIndex: node[nodeChildrenKey].length,
+							childIndex: node[childrenKey].length,
 						});
 
-						node[nodeChildrenKey].push(null); // placeholder until the item arrives
+						node[childrenKey].push(null); // placeholder until the item arrives
 					}
 				}
 
-				if (node[nodeChildrenKey].length === 0) {
-					delete node[nodeChildrenKey];
+				if (node[childrenKey].length === 0) {
+					delete node[childrenKey];
 				}
 			}
 
@@ -338,13 +338,13 @@ export default function buildTree<
 			if (parentDescriptor) {
 				const { parentNode, childIndex } = parentDescriptor;
 
-				parentNode[nodeChildrenKey][childIndex] = node;
+				parentNode[childrenKey][childIndex] = node;
 
-				if (nodeParentKey !== false) {
-					if (node[nodeParentKey] && node[nodeParentKey] !== parentNode) {
+				if (parentKey !== false) {
+					if (node[parentKey] && node[parentKey] !== parentNode) {
 						throw new Error(`Node '${id}' already has a different parent, refusing to overwrite.`);
 					}
-					node[nodeParentKey] = parentNode;
+					node[parentKey] = parentNode;
 				}
 
 				waitingChildren.delete(id);
@@ -364,10 +364,10 @@ export default function buildTree<
 			for (let i = pending.length - 1; i >= 0; i--) {
 				const { parentNode, childIndex } = pending[i];
 
-				parentNode[nodeChildrenKey].splice(childIndex, 1);
+				parentNode[childrenKey].splice(childIndex, 1);
 
-				if (parentNode[nodeChildrenKey].length === 0) {
-					delete parentNode[nodeChildrenKey];
+				if (parentNode[childrenKey].length === 0) {
+					delete parentNode[childrenKey];
 				}
 			}
 		}
@@ -378,9 +378,9 @@ export default function buildTree<
 		}
 	}
 
-	const withDepth = typeof nodeDepthKey === 'string'
-		|| typeof nodeDepthKey === 'symbol'
-		|| typeof nodeDepthKey === 'number';
+	const withDepth = typeof depthKey === 'string'
+		|| typeof depthKey === 'symbol'
+		|| typeof depthKey === 'number';
 
 	if (validateTree || withDepth) {
 		if (roots.length === 0 && nodes.size > 0) {
@@ -402,11 +402,11 @@ export default function buildTree<
 			visited.add(node);
 
 			if (withDepth) {
-				node[nodeDepthKey] = depth;
+				node[depthKey] = depth;
 			}
 
-			if (node[nodeChildrenKey]) {
-				for (const child of node[nodeChildrenKey]) {
+			if (node[childrenKey]) {
+				for (const child of node[childrenKey]) {
 					stack.push({ node: child, depth: depth + 1 });
 				}
 			}

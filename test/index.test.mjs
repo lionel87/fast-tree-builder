@@ -83,39 +83,39 @@ describe('buildTree', () => {
 			() => buildTree(items, {
 				id: 'id',
 				childIds: 'children',
-				nodeParentKey: false,
+				parentKey: false,
 				validateTree: true,
 			}),
 			/node reachable via multiple paths/i
 		);
 	});
 
-	it('assigns depth correctly using nodeDepthKey', () => {
+	it('assigns depth correctly using depthKey', () => {
 		const items = [
 			{ id: 1 },
 			{ id: 2, parent: 1 },
 			{ id: 3, parent: 2 },
 		];
 
-		const { roots } = buildTree(items, { id: 'id', parentId: 'parent', nodeDepthKey: 'depth' });
+		const { roots } = buildTree(items, { id: 'id', parentId: 'parent', depthKey: 'depth' });
 
 		assert.strictEqual(roots[0].depth, 0);
 		assert.strictEqual(roots[0].children[0].depth, 1);
 		assert.strictEqual(roots[0].children[0].children[0].depth, 2);
 	});
 
-	it('omits parent reference when nodeParentKey is false', () => {
+	it('omits parent reference when parentKey is false', () => {
 		const items = [{ id: 1 }, { id: 2, parent: 1 }];
 
-		const { roots } = buildTree(items, { id: 'id', parentId: 'parent', nodeParentKey: false });
+		const { roots } = buildTree(items, { id: 'id', parentId: 'parent', parentKey: false });
 
 		assert.strictEqual(roots[0].children[0].parent, undefined);
 	});
 
-	it('correctly merges values into node when nodeValueKey is false', () => {
+	it('correctly merges values into node when valueKey is false', () => {
 		const items = [{ id: 1, name: 'Node' }];
 
-		const { roots } = buildTree(items, { id: 'id', parentId: 'parent', nodeValueKey: false });
+		const { roots } = buildTree(items, { id: 'id', parentId: 'parent', valueKey: false });
 
 		assert.strictEqual(roots[0].name, 'Node');
 	});
@@ -126,7 +126,7 @@ describe('buildTree', () => {
 		const { roots } = buildTree(items, {
 			id: 'id',
 			parentId: 'parent',
-			nodeValueMapper: item => ({ label: item.name }),
+			valueResolver: item => ({ label: item.name }),
 		});
 
 		assert.strictEqual(roots[0].value.label, 'Node');

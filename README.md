@@ -19,7 +19,7 @@
 ## Features
 
 - **Supports `parentId` and `childIds` Models** – Choose your relation style via options.
-- **Fully Typed** – TypeScript support with correct types for the built tree.
+- **Fully Typed** – Carefully written TypeScript types for the built tree.
 - **Highly Customizable** – Design the node structure as you like.
 - **Any Iterable Accepted** – Works on arrays, sets, or any iterable type.
 - **Flexible ID Types** – Anything can be an identifier; relations matched with `childId === parentId`.
@@ -59,18 +59,18 @@ Builds a tree structure from an iterable list of items.
 
 - `id`: A key or function used to extract the unique identifier from each item.
 
-##### One of:
+##### One of
 
 - `parentId`: A key or function that access the parent ID of the item.
 - `childIds`: A key or function that access an iterable of child IDs for the item.
 
 ##### Optional
 
-- `nodeValueMapper`: Function to map an item to a custom value stored in the node.
-- `nodeValueKey`: Key where the item is stored in the output node. Set to `false` to inline the item directly into the node. Defaults to `'value'`.
-- `nodeParentKey`: Key where the node's parent reference is stored. Set to `false` to omit parent links. Defaults to `'parent'`.
-- `nodeChildrenKey`: Key where the node's children are stored. Defaults to `'children'`.
-- `nodeDepthKey`: Object key used to store the node's depth in the tree (root = 0). Set to `false` to omit depth values. Turns on `validateTree` when a string value is set here. Defaults to `false`.
+- `valueResolver`: Function to transform an item to a custom value stored in the node. Defaults to use the input item as is.
+- `valueKey`: Key where the item is stored in the output node. Set to `false` to inline the item directly into the node. Defaults to `'value'`.
+- `parentKey`: Key where the node's parent reference is stored in the output node. Set to `false` to omit parent links. Defaults to `'parent'`.
+- `childrenKey`: Key where the node's children are stored in the output node. Defaults to `'children'`.
+- `depthKey`: Key where the node's depth (with root = 0) is stored in the output node. Set to `false` to omit depth values. Automatically enables `validateTree` when a string value is set here. Defaults to `false`.
 - `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Errors are thrown on invalid references. Defaults to `false`.
 - `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multipla paths). Errors are thrown if the check fails. Defaults to `false`.
 
@@ -88,7 +88,7 @@ Builds a tree structure from an iterable list of items.
 - Missing required `id`, `parentId`/`childIds`, or `options` parameter
 - Duplicate item identifiers in input
 - Invalid reference (if `validateReferences` is enabled)
-- Cycle or structural error (if `validateTree` is enabled or `nodeDepthKey` is string)
+- Cycle or structural error (if `validateTree` is enabled or `depthKey` is string)
 
 
 ## Usage
@@ -115,9 +115,9 @@ const { roots, nodes } = buildTree(items, {
   id: 'id',
   parentId: 'parent',
   // the built node:
-  nodeValueKey: 'value',
-  nodeParentKey: 'parent',
-  nodeChildrenKey: 'children',
+  valueKey: 'value',
+  parentKey: 'parent',
+  childrenKey: 'children',
 });
 
 console.log(roots[0].value.name);
@@ -193,10 +193,10 @@ const items = [
 const { roots, nodes } = buildTree(items, {
   id: item => item.key?.n,
   parentId: item => item.parentKey?.n,
-  nodeValueMapper: item => ({ title: item.name }),
-  nodeValueKey: false, // merge item data into node
-  nodeParentKey: 'up',
-  nodeChildrenKey: 'down',
+  valueResolver: item => ({ title: item.name }),
+  valueKey: false, // merge item data into node
+  parentKey: 'up',
+  childrenKey: 'down',
 });
 
 console.log(roots[0].title);
@@ -251,8 +251,8 @@ const items = [
 const { roots, nodes } = buildTree(items, {
   id: item => item.substring(2, 4),
   parentKey: item => item.substring(0, 2),
-  nodeValueMapper: item => ({ name: item.substring(4) }),
-  nodeValueKey: false, // merge item data into node
+  valueResolver: item => ({ name: item.substring(4) }),
+  valueKey: false, // merge item data into node
 });
 
 console.log(roots[0].name);
