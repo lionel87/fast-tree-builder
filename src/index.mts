@@ -55,7 +55,7 @@ export default function buildTree<
 	/**
 	 * Key where the item is stored in the output node.
 	 *
-	 * Set to `false` to inline the item directly into the node.
+	 * Set to `false` to merge the item's properties directly into the node (shallow copy).
 	 *
 	 * Defaults to `'value'`.
 	 */
@@ -83,8 +83,8 @@ export default function buildTree<
 	 *
 	 * Set to `false` to omit depth values.
 	 *
-	 * Automatically enables `validateTree` when a string value is set here:
-	 * Depth assignment requires a valid tree structure, and both operations also share the same traversal logic.
+	 * Setting this enables validateTree implicitly, as depth calculation requires full tree validation.
+	 * Both operations share the same traversal logic so the additional tree validation is not an overhead.
 	 *
 	 * Defaults to `false`.
 	 */

@@ -61,18 +61,23 @@ Builds a tree structure from an iterable list of items.
 
 ##### One of
 
-- `parentId`: A key or function that access the parent ID of the item.
-- `childIds`: A key or function that access an iterable of child IDs for the item.
+- `parentId`: A key or function that accesses the parent ID of the item.
+- `childIds`: A key or function that accesses an iterable of child IDs for the item.
 
 ##### Optional
 
 - `valueResolver`: Function to transform an item to a custom value stored in the node. Defaults to use the input item as is.
-- `valueKey`: Key where the item is stored in the output node. Set to `false` to inline the item directly into the node. Defaults to `'value'`.
+- `valueKey`: Key where the item is stored in the output node. Set to `false` to merge the item's properties directly into the node (shallow copy). Defaults to `'value'`.
 - `parentKey`: Key where the node's parent reference is stored in the output node. Set to `false` to omit parent links. Defaults to `'parent'`.
 - `childrenKey`: Key where the node's children are stored in the output node. Defaults to `'children'`.
-- `depthKey`: Key where the node's depth (with root = 0) is stored in the output node. Set to `false` to omit depth values. Automatically enables `validateTree` when a string value is set here. Defaults to `false`.
+- `depthKey`: Key where the node's depth (with root = 0) is stored in the output node. Set to `false` to omit depth values. Setting this enables validateTree implicitly, as depth calculation requires full tree validation. Defaults to `false`.
 - `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Errors are thrown on invalid references. Defaults to `false`.
-- `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multipla paths). Errors are thrown if the check fails. Defaults to `false`.
+- `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multiple paths). Errors are thrown if the check fails. Defaults to `false`.
+
+> **Accessors vs. Output Keys**
+>
+> * `id`, `parentId`, `childIds` works on the input item and can be property names or functions.
+> * `valueKey`, `parentKey`, `childrenKey`, `depthKey` are always strings or `false` and are used as keys in the output nodes.
 
 #### Returns
 
@@ -250,7 +255,7 @@ const items = [
 
 const { roots, nodes } = buildTree(items, {
   id: item => item.substring(2, 4),
-  parentKey: item => item.substring(0, 2),
+  parentId: item => item.substring(0, 2),
   valueResolver: item => ({ name: item.substring(4) }),
   valueKey: false, // merge item data into node
 });
