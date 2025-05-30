@@ -297,7 +297,7 @@ console.log(roots);
 
 ## Comparison with other tree building libraries
 
-The package aims to be feature complete and highly customizable, which usually opposes with performance. There are other packages that may be more *performant* but lacks features that I really needed in my daily coding. In standard scenarios this package should perform more than enough and nearly as good as any other package.
+The package aims to be feature complete and highly customizable, which usually opposes with performance. There are other packages that may be more *performant* but lacks features that I really needed in my daily coding. In standard scenarios this package should perform more than enough and as good as any other package.
 
 For scenarios where performance is critical and you start to benchmark tree building libraries, consider  implementing your custom algorithm instead. It could be as simple as:
 ```js
