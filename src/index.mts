@@ -104,13 +104,11 @@ export default function buildTree<
 	validateTree?: boolean;
 
 	/**
-	 * Validates referential integrity of the input.
+	 * When true, verifies all parentId or childIds resolve to real items.
+	 * Only `null` and `undefined` are acceptable as parent id for root nodes in parentId mode.
+	 * Every item in the children list must resolve to a real item in childIds mode.
 	 *
-	 * In strict mode:
-	 * - All parent and child references must point to existing items in the input.
-	 * - Root items must have their `parentId` unset, `null`, or `undefined`.
-	 *
-	 * Any invalid or missing references will result in an error during tree construction.
+	 * Errors are thrown on invalid references.
 	 *
 	 * Defaults to `false`.
 	 */
