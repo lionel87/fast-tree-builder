@@ -25,12 +25,13 @@ type AccessorReturnType<O, P extends (keyof O) | ((item: O) => any)> =
 	P extends (keyof O) ? O[P] :
 	never;
 
-type ObjectKeysOfIterableProperties<T> = {
+// the '0 extends (1 & T)' checks for an 'any' type, otherwise it would be only a 'string'
+type ObjectKeysOfIterableProperties<T> = 0 extends (1 & T) ? PropertyKey : {
 	[K in keyof T]: T[K] extends (Iterable<unknown> & object) | null | undefined ? K : never;
 }[keyof T];
 
 export default function buildTree<
-	TIdAccessor extends (keyof NoInfer<TInputValue>) | ((item: NoInfer<TInputValue>) => unknown),
+	TIdAccessor extends NoInfer<keyof TInputValue> | ((item: NoInfer<TInputValue>) => unknown),
 	TValueKey extends PropertyKey | false = 'value',
 	TParentKey extends PropertyKey | false = 'parent',
 	TChildrenKey extends PropertyKey = 'children',
@@ -126,14 +127,14 @@ export default function buildTree<
 	 *
 	 * Either `parentId` or `childIds` must be provided.
 	 */
-	childIds: ObjectKeysOfIterableProperties<NoInfer<TInputValue>> | ((item: NoInfer<TInputValue>) => (Iterable<unknown> & object) | null | undefined);
+	childIds: NoInfer<ObjectKeysOfIterableProperties<TInputValue>> | ((item: NoInfer<TInputValue>) => (Iterable<unknown> & object) | null | undefined);
 } | {
 	/**
 	 * A string key or function used to get the item's parent identifier.
 	 *
 	 * Either `parentId` or `childIds` must be provided.
 	 */
-	parentId: (keyof NoInfer<TInputValue>) | ((item: NoInfer<TInputValue>) => unknown);
+	parentId: NoInfer<keyof TInputValue> | ((item: NoInfer<TInputValue>) => unknown);
 
 	/**
 	 * A string key or function to retrieve a list of child identifiers from an item.
