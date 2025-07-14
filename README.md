@@ -75,6 +75,16 @@ Builds a tree structure from an iterable list of items.
 - `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Only `null` and `undefined` are acceptable parent ids for root nodes when enabled. Errors are thrown on invalid references. Defaults to `false`.
 - `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multiple paths). Errors are thrown if the check fails. Defaults to `false`.
 
+> **Note on Child Node Ordering**
+>
+> This library preserves the order of items when building tree structures, depending on how the tree is constructed:
+>
+> When using parent IDs to connect items, the order of child nodes will match the order in which the items appeared in the original input array.
+>
+> When using child IDs to connect items, the order of child nodes will match the order of the child IDs defined in the input item.
+>
+> This behavior may be useful if maintaining a specific order of child nodes is important.
+
 > **Input Accessors vs. Output Keys**
 >
 > * `id`, `parentId`, `childIds` works on the input item and can be property names or functions. The library does not make any assumption what an id should be so we purposely allow `null` and `undefined` as a valid id too!
