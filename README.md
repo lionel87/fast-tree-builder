@@ -71,6 +71,7 @@ Builds a tree structure from an iterable list of items.
 - `parentKey`: Key where the node's parent reference is stored in the output node. Set to `false` to omit parent links. Defaults to `'parent'`.
 - `childrenKey`: Key where the node's children are stored in the output node. Defaults to `'children'`.
 - `depthKey`: Key where the node's depth (with root = 0) is stored in the output node. Set to `false` to omit depth values. Setting this enables validateTree implicitly, as depth calculation requires full tree validation. Defaults to `false`.
+- `includeEmptyChildrenArray`: Leaf nodes will include an empty children array when this is set to `true`. Otherwise they are left as `undefined`. Defaults to `false`.
 - `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Only `null` and `undefined` are acceptable parent ids for root nodes when enabled. Errors are thrown on invalid references. Defaults to `false`.
 - `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multiple paths). Errors are thrown if the check fails. Defaults to `false`.
 

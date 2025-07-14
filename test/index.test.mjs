@@ -199,6 +199,26 @@ describe('buildTree in parentId mode', () => {
 		assert.strictEqual(parent.children[1].value.name, 'child2');
 	});
 
+	it('does not set children on leaves', () => {
+		const items = [{ id: 1 }];
+		const { roots } = buildTree(items, {
+			id: 'id',
+			parentId: 'parent',
+		});
+
+		assert.ok(typeof roots[0].children === 'undefined');
+	});
+
+	it('sets children on leaves if requested', () => {
+		const items = [{ id: 1 }];
+		const { roots } = buildTree(items, {
+			id: 'id',
+			parentId: 'parent',
+			includeEmptyChildrenArray: true,
+		});
+
+		assert.ok(typeof roots[0].children === 'object');
+	});
 });
 
 describe('buildTree in childIds mode', () => {
@@ -306,6 +326,27 @@ describe('buildTree in childIds mode', () => {
 		});
 
 		assert.strictEqual(roots[0].children, undefined);
+	});
+
+	it('does not set children on leaves', () => {
+		const items = [{ id: 1 }];
+		const { roots } = buildTree(items, {
+			id: 'id',
+			childIds: 'children',
+		});
+
+		assert.ok(typeof roots[0].children === 'undefined');
+	});
+
+	it('sets children on leaves if requested', () => {
+		const items = [{ id: 1 }];
+		const { roots } = buildTree(items, {
+			id: 'id',
+			childIds: 'children',
+			includeEmptyChildrenArray: true,
+		});
+
+		assert.ok(typeof roots[0].children === 'object');
 	});
 
 	it('throws when trying to overwrite existing parent reference of a child', () => {

@@ -3,7 +3,8 @@ type TreeNode<
 	TValueKey extends PropertyKey | false,
 	TParentKey extends PropertyKey | false,
 	TChildrenKey extends PropertyKey,
-	TDepthKey extends PropertyKey | false
+	TDepthKey extends PropertyKey | false,
+	TIncludeEmptyChildrenArray extends boolean,
 > =
 	& (TValueKey extends false
 		? Omit<TValue, Exclude<TParentKey, false> | TChildrenKey | Exclude<TDepthKey, false>>
@@ -11,9 +12,12 @@ type TreeNode<
 	)
 	& (TParentKey extends false
 		? {}
-		: { [k in Exclude<TParentKey, false>]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey>; }
+		: { [k in Exclude<TParentKey, false>]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey, TIncludeEmptyChildrenArray>; }
 	)
-	& { [k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey>[]; }
+	& (TIncludeEmptyChildrenArray extends true
+		? { [k in TChildrenKey]: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey, TIncludeEmptyChildrenArray>[]; }
+		: { [k in TChildrenKey]?: TreeNode<TValue, TValueKey, TParentKey, TChildrenKey, TDepthKey, TIncludeEmptyChildrenArray>[]; }
+	)
 	& (TDepthKey extends false
 		? {}
 		: { [k in Exclude<TDepthKey, false>]: number; }
@@ -42,6 +46,7 @@ export default function buildTree<
 		unknown
 	) = any,
 	TResolvedValue extends (TValueKey extends false ? object : unknown) = TInputValue,
+	TIncludeEmptyChildrenArray extends boolean = false,
 >(items: Iterable<TInputValue>, options: {
 	/**
 	 * A string key or function used to get the item's unique identifier.
@@ -90,6 +95,16 @@ export default function buildTree<
 	 * Defaults to `false`.
 	 */
 	depthKey?: TDepthKey;
+
+	/**
+	 * Leaf nodes will include an empty children array when this is set to `true`.
+	 * Otherwise they are left as `undefined`.
+	 *
+	 * This ensures you can loop over every node child list without checking its existence.
+	 *
+	 * Defaults to `false`.
+	 */
+	includeEmptyChildrenArray?: TIncludeEmptyChildrenArray;
 
 	/**
 	 * Validates that the final structure forms a tree.
@@ -148,7 +163,8 @@ export default function buildTree<
 		TValueKey,
 		TParentKey,
 		TChildrenKey,
-		TDepthKey
+		TDepthKey,
+		TIncludeEmptyChildrenArray
 	>[];
 	nodes: Map<
 		AccessorReturnType<TInputValue, TIdAccessor>,
@@ -157,7 +173,8 @@ export default function buildTree<
 			TValueKey,
 			TParentKey,
 			TChildrenKey,
-			TDepthKey
+			TDepthKey,
+			TIncludeEmptyChildrenArray
 		>
 	>;
 } {
@@ -176,6 +193,7 @@ export default function buildTree<
 		depthKey = false,
 		validateTree = false,
 		validateReferences = false,
+		includeEmptyChildrenArray = false,
 	} = options;
 
 	if (!idAccessor) {
@@ -214,6 +232,10 @@ export default function buildTree<
 				}
 				delete node[childrenKey];
 				// no need to delete 'depthKey' here
+			}
+
+			if (includeEmptyChildrenArray) {
+				node[childrenKey] = [];
 			}
 
 			nodes.set(id, node);
@@ -286,6 +308,10 @@ export default function buildTree<
 				}
 				delete node[childrenKey];
 				// no need to delete 'depthKey' here
+			}
+
+			if (includeEmptyChildrenArray) {
+				node[childrenKey] = [];
 			}
 
 			nodes.set(id, node);
