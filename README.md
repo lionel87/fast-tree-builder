@@ -61,8 +61,8 @@ Builds a tree structure from an iterable list of items.
 
 ##### One of
 
-- `parentId`: A key or function that accesses the parent ID of the item.
-- `childIds`: A key or function that accesses an iterable of child IDs for the item.
+- `parentId`: A key or a function that returns the parent ID of the item.
+- `childIds`: A key or a function that returns an iterable of child IDs for the item.
 
 ##### Optional
 
@@ -74,27 +74,6 @@ Builds a tree structure from an iterable list of items.
 - `includeEmptyChildrenArray`: Leaf nodes will include an empty children array when this is set to `true`. Otherwise they are left as `undefined`. Defaults to `false`.
 - `validateReferences`: When `true`, verifies all `parentId` or `childIds` resolve to real items. Only `null` and `undefined` are acceptable parent ids for root nodes when enabled. Errors are thrown on invalid references. Defaults to `false`.
 - `validateTree`: When `true`, verifies that the final structure is a valid tree (no cycles or nodes reachable via multiple paths). Errors are thrown if the check fails. Defaults to `false`.
-
-> **Note on Child Node Ordering**
->
-> This library preserves the order of items when building tree structures, depending on how the tree is constructed:
->
-> When using parent IDs to connect items, the order of child nodes will match the order in which the items appeared in the original input array.
->
-> When using child IDs to connect items, the order of child nodes will match the order of the child IDs defined in the input item.
->
-> This behavior may be useful if maintaining a specific order of child nodes is important.
-
-> **Input Accessors vs. Output Keys**
->
-> * `id`, `parentId`, `childIds` works on the input item and can be property names or functions. The library does not make any assumption what an id should be so we purposely allow `null` and `undefined` as a valid id too!
-> * `valueKey`, `parentKey`, `childrenKey`, `depthKey` are always strings or `false` and are used as keys in the output nodes.
-
-> **'validateReferences' option**
->
-> Validation operates differently when in `parentId` mode and in `childIds` mode!
-> * in `parentId` mode: validates that the parent ids of root nodes was `null` or `undefined` and nothing else. If you expect these parent ids to be other than `null` or `undefined`, you can safely turn off this validation and loop trough on the roots manually to check the original parentId values are the ones you expect.
-> * in `childIds` mode: validates that every referenced child is resolved. Even if the child list contains `undefined`, a node with an `undefined` as ID must exist in the input.
 
 #### Returns
 
@@ -111,6 +90,36 @@ Builds a tree structure from an iterable list of items.
 - Duplicate item identifiers in input
 - Invalid reference (if `validateReferences` is enabled)
 - Cycle or structural error (if `validateTree` is enabled or `depthKey` is string)
+
+### Good to know
+
+> **Input Accessors vs. Output Keys in Options**
+>
+> * `id`, `parentId`, `childIds` works on the input item and can be property names or functions.
+> * `valueKey`, `parentKey`, `childrenKey`, `depthKey` are always strings or `false` and are used as keys in the output nodes.
+>
+> I considered prefixing these two groups with `input` and `output` to distinguish them, but in the end, this note in the README felt good enough.
+
+
+> **Identifiers**
+>
+> The library makes no assumptions about ID values — any unique JavaScript value is accepted, including `null` and `undefined`.
+
+
+> **Child Node Ordering**
+>
+> This library preserves the order of items when building tree structures, depending on how the tree is constructed:
+>
+> When using parent IDs to connect items, the order of child nodes will match the order in which the items appeared in the original input array.
+>
+> When using child IDs to connect items, the order of child nodes will match the order of the child IDs defined in the input item.
+
+
+> **'validateReferences' option**
+>
+> Validation operates differently when in `parentId` mode and in `childIds` mode!
+> * in `parentId` mode: validates that the parent IDs of root nodes was `null` or `undefined` and nothing else. If you expect these parent IDs to be other than `null` or `undefined`, you can safely turn off this validation and loop trough on the roots manually to check the original parentId values are the ones you expect.
+> * in `childIds` mode: validates that every referenced child is resolved. Even if the child list contains `undefined`, a node with an `undefined` as ID must exist in the input.
 
 
 ## Usage
@@ -304,13 +313,40 @@ console.log(roots);
     type TreeNode = typeof roots[number];
     ```
 
-    We intentionally do not expose a generic `TreeNode` type from the package. It is harder to parameterize correctly by hand than to write a recursive type from scratch.
+    If the above doesn't work for your case, define your tree node type from scratch.
+
+    We intentionally don’t expose a generic `TreeNode` type in the package, as maintaining a complex set of generic parameters is often more cumbersome than writing a custom recursive type yourself.
+
+2. How can I present the `children` list in a specific order?
+
+    Pre-sort your input items:
+
+    ```typescript
+    const items = [
+      { id: 0, name: 'X', order: 0 },
+      { id: 1, name: 'A', order: 3, parent: 0 },
+      { id: 2, name: 'B', order: 2, parent: 0 },
+      { id: 3, name: 'C', order: 1, parent: 0 },
+    ];
+
+    // sort input by your `order` value
+    items.sort((a, b) => a.order - b.order);
+
+    const { roots } = buildTree(items, {
+      id: 'id',
+      parentId: 'parent',
+    });
+
+    roots[0].children
+    // this will be sorted as 'C', 'B', 'A'
+    // according to their order values.
+    ```
 
 ## Comparison with other tree building libraries
 
-The package aims to be feature complete and highly customizable, which usually opposes with performance. There are other packages that may be more *performant* but lacks features that I really needed in my daily coding. In standard scenarios this package should perform more than enough and as good as any other package.
+The package is designed to be feature-complete and highly customizable, which often comes at the cost of performance. Some libraries may be more *performant*, but they lack features I regularly need. In typical use cases, this package performs well, and others are usually only faster when offering much less customization.
 
-For scenarios where performance is critical and you start to benchmark tree building libraries, consider  implementing your custom algorithm instead. It could be as simple as:
+For scenarios where performance is critical and you start benchmarking libraries, consider implementing your custom algorithm instead. It could be as simple as:
 ```js
 const roots = [];
 const nodes = new Map();
