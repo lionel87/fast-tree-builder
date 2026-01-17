@@ -4,7 +4,7 @@
 [![NPM downloads](https://img.shields.io/npm/dm/fast-tree-builder.svg)](https://npmjs.org/package/fast-tree-builder)
 [![Build Status](https://github.com/lionel87/fast-tree-builder/actions/workflows/build.yaml/badge.svg)](https://github.com/lionel87/fast-tree-builder/actions/workflows/build.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/lionel87/fast-tree-builder/badge.svg?branch=master)](https://coveralls.io/github/lionel87/fast-tree-builder?branch=master)
-![Maintenance](https://img.shields.io/maintenance/yes/2025)
+![Maintenance](https://img.shields.io/maintenance/yes/2026)
 
 `fast-tree-builder` is a utility for easy tree building from iterable collections, enabling safe and predictable access to hierarchical data. It supports highly customizable input and output shapes.
 
@@ -13,7 +13,7 @@
 
 - You have a list of items,
 - each item is identifiable by a unique id,
-- the items are connected via a *parent id* OR *child ids*.
+- the items are connectable via a *parent id* OR a list of *child ids*.
 
 
 ## Features
@@ -28,7 +28,7 @@
 - **Multi-Root Support** – Handles disjoint trees naturally.
 - **Arbitary Node Access** – Returns a `Map` that allows constant-time access to any node.
 - **Tree Validation** – Detects cycles or nodes reachable through multiple paths.
-- **Reference Validation** – Optionally enforce that all parent/child links are valid.
+- **Reference Validation** – Optionally enforce that all parent/child references are resolved.
 - **Depth Values** – Optionally include a depth value in each node.
 
 ## Installation
@@ -119,7 +119,7 @@ Builds a tree structure from an iterable list of items.
 >
 > Validation operates differently when in `parentId` mode and in `childIds` mode!
 > * in `parentId` mode: validates that the parent IDs of root nodes was `null` or `undefined` and nothing else. If you expect these parent IDs to be other than `null` or `undefined`, you can safely turn off this validation and loop trough on the roots manually to check the original parentId values are the ones you expect.
-> * in `childIds` mode: validates that every referenced child is resolved. Even if the child list contains `undefined`, a node with an `undefined` as ID must exist in the input.
+> * in `childIds` mode: validates that every referenced child is resolved. Even if the child ids list contains an `undefined` value, a node with an ID of `undefined` must exist in the input.
 
 
 ## Usage
@@ -315,7 +315,7 @@ console.log(roots);
 
     If the above doesn't work for your case, define your tree node type from scratch.
 
-    We intentionally don’t expose a generic `TreeNode` type in the package, as maintaining a complex set of generic parameters is often more cumbersome than writing a custom recursive type yourself.
+    We intentionally avoid providing a generic `TreeNode` type in the package, as maintaining a complex set of generic parameters is often more cumbersome and misleading than writing a custom recursive type yourself.
 
 2. How can I present the `children` list in a specific order?
 
